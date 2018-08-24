@@ -1,0 +1,497 @@
+[32m[0806 14:55:23 @logger.py:74][0m Argv: ./train.py --config MODE_MASK=True MODE_FPN=True DATA.BASEDIR=/home/duygiang/deep-learning/COCO/DIR BACKBONE.WEIGHTS=/home/duygiang/deep-learning/ImageNet-R50-AlignPadding.npz
+[32m[0806 14:55:23 @config.py:211][0m Config: ------------------------------------------
+{'BACKBONE': {'FREEZE_AFFINE': False,
+              'FREEZE_AT': 2,
+              'NORM': 'FreezeBN',
+              'RESNET_NUM_BLOCK': [3, 4, 6, 3],
+              'STRIDE_1X1': False,
+              'TF_PAD_MODE': False,
+              'WEIGHTS': '/home/duygiang/deep-learning/ImageNet-R50-AlignPadding.npz'},
+ 'DATA': {'BASEDIR': '/home/duygiang/deep-learning/COCO/DIR',
+          'CLASS_NAMES': [],
+          'NUM_CATEGORY': 80,
+          'NUM_CLASS': 81,
+          'TRAIN': ['train2014', 'valminusminival2014'],
+          'VAL': 'minival2014'},
+ 'FPN': {'ANCHOR_STRIDES': (4, 8, 16, 32, 64),
+         'FRCNN_CONV_HEAD_DIM': 256,
+         'FRCNN_FC_HEAD_DIM': 1024,
+         'FRCNN_HEAD_FUNC': 'fastrcnn_2fc_head',
+         'MRCNN_HEAD_FUNC': 'maskrcnn_up4conv_head',
+         'NORM': 'None',
+         'NUM_CHANNEL': 256,
+         'PROPOSAL_MODE': 'Level',
+         'RESOLUTION_REQUIREMENT': 32},
+ 'FRCNN': {'BATCH_PER_IM': 512,
+           'BBOX_REG_WEIGHTS': [10.0, 10.0, 5.0, 5.0],
+           'FG_RATIO': 0.25,
+           'FG_THRESH': 0.5},
+ 'MODE_FPN': True,
+ 'MODE_MASK': True,
+ 'MRCNN': {'HEAD_DIM': 256},
+ 'PREPROC': {'MAX_SIZE': 1344.0,
+             'PIXEL_MEAN': [123.675, 116.28, 103.53],
+             'PIXEL_STD': [58.395, 57.12, 57.375],
+             'SHORT_EDGE_SIZE': 800},
+ 'RPN': {'ANCHOR_RATIOS': (0.5, 1.0, 2.0),
+         'ANCHOR_SIZES': (32, 64, 128, 256, 512),
+         'ANCHOR_STRIDE': 16,
+         'BATCH_PER_IM': 256,
+         'CROWD_OVERLAP_THRESH': 0.7,
+         'FG_RATIO': 0.5,
+         'HEAD_DIM': 1024,
+         'MIN_SIZE': 0,
+         'NEGATIVE_ANCHOR_THRESH': 0.3,
+         'NUM_ANCHOR': 15,
+         'POSITIVE_ANCHOR_THRESH': 0.7,
+         'PROPOSAL_NMS_THRESH': 0.7,
+         'TEST_PER_LEVEL_NMS_TOPK': 1000,
+         'TEST_POST_NMS_TOPK': 1000,
+         'TEST_PRE_NMS_TOPK': 6000,
+         'TRAIN_PER_LEVEL_NMS_TOPK': 2000,
+         'TRAIN_POST_NMS_TOPK': 2000,
+         'TRAIN_PRE_NMS_TOPK': 12000},
+ 'TEST': {'FRCNN_NMS_THRESH': 0.5,
+          'RESULTS_PER_IM': 100,
+          'RESULT_SCORE_THRESH': 0.0001,
+          'RESULT_SCORE_THRESH_VIS': 0.3},
+ 'TRAIN': {'BASE_LR': 0.01,
+           'LR_SCHEDULE': [240000, 320000, 360000],
+           'NUM_GPUS': 1,
+           'STEPS_PER_EPOCH': 500,
+           'WARMUP': 1000,
+           'WEIGHT_DECAY': 0.0001},
+ 'TRAINER': 'replicated'}
+[32m[0806 14:55:23 @train.py:568][0m Warm Up Schedule (steps, value): [(0, 0.026400000000000003), (1000, 0.01)]
+[32m[0806 14:55:23 @train.py:569][0m LR Schedule (epochs, value): [(2, 0.01), (3840.0, 0.001), (5120.0, 0.00010000000000000002)]
+[32m[0806 14:55:23 @prof.py:45][0m [5m[31mWRN[0m [GPUUtilizationTracker] Both devices and CUDA_VISIBLE_DEVICES are None! Will monitor all 1 visible GPUs!
+[32m[0806 14:55:24 @coco.py:76][0m Instances loaded from /home/duygiang/deep-learning/COCO/DIR/annotations/instances_train2014.json.
+[32m[0806 14:55:24 @timer.py:48][0m Load Groundtruth Boxes for train2014 finished, time:0.0079sec.
+[32m[0806 14:55:24 @coco.py:76][0m Instances loaded from /home/duygiang/deep-learning/COCO/DIR/annotations/instances_valminusminival2014.json.
+[32m[0806 14:55:24 @timer.py:48][0m Load Groundtruth Boxes for valminusminival2014 finished, time:0.0103sec.
+[32m[0806 14:55:24 @data.py:310][0m Filtered 0 images which contain no non-crowd groudtruth boxes. Total #images for training: 30
+[32m[0806 14:55:24 @input_source.py:202][0m Setting up the queue 'QueueInput/input_queue' for CPU prefetching ...
+[32m[0806 14:55:24 @training.py:111][0m Building graph for training tower 0 on device /gpu:0 ...
+[32m[0806 14:55:24 @registry.py:121][0m conv0 input: [1, 3, None, None]
+[32m[0806 14:55:24 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:24 @registry.py:129][0m conv0 output: [1, 64, None, None]
+[32m[0806 14:55:24 @registry.py:121][0m pool0 input: [1, 64, None, None]
+[32m[0806 14:55:24 @registry.py:129][0m pool0 output: [1, 64, None, None]
+[32m[0806 14:55:24 @registry.py:121][0m group0/block0/conv1 input: [1, 64, None, None]
+[32m[0806 14:55:24 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:24 @registry.py:129][0m group0/block0/conv1 output: [1, 64, None, None]
+[32m[0806 14:55:24 @registry.py:121][0m group0/block0/conv2 input: [1, 64, None, None]
+[32m[0806 14:55:24 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:24 @registry.py:129][0m group0/block0/conv2 output: [1, 64, None, None]
+[32m[0806 14:55:24 @registry.py:121][0m group0/block0/conv3 input: [1, 64, None, None]
+[32m[0806 14:55:24 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block0/conv3 output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block0/convshortcut input: [1, 64, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block0/convshortcut output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block1/conv1 input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block1/conv1 output: [1, 64, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block1/conv2 input: [1, 64, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block1/conv2 output: [1, 64, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block1/conv3 input: [1, 64, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block1/conv3 output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block2/conv1 input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block2/conv1 output: [1, 64, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block2/conv2 input: [1, 64, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block2/conv2 output: [1, 64, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group0/block2/conv3 input: [1, 64, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group0/block2/conv3 output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block0/conv1 input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block0/conv1 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block0/conv2 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block0/conv2 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block0/conv3 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block0/conv3 output: [1, 512, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block0/convshortcut input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block0/convshortcut output: [1, 512, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block1/conv1 input: [1, 512, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block1/conv1 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block1/conv2 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block1/conv2 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block1/conv3 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block1/conv3 output: [1, 512, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block2/conv1 input: [1, 512, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block2/conv1 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block2/conv2 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block2/conv2 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block2/conv3 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block2/conv3 output: [1, 512, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block3/conv1 input: [1, 512, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block3/conv1 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block3/conv2 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block3/conv2 output: [1, 128, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group1/block3/conv3 input: [1, 128, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group1/block3/conv3 output: [1, 512, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group2/block0/conv1 input: [1, 512, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group2/block0/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group2/block0/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group2/block0/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group2/block0/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:25 @registry.py:129][0m group2/block0/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:25 @registry.py:121][0m group2/block0/convshortcut input: [1, 512, None, None]
+[32m[0806 14:55:25 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block0/convshortcut output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block1/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block1/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block1/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block1/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block1/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block1/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block2/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block2/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block2/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block2/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block2/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block2/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block3/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block3/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block3/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block3/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block3/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block3/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block4/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block4/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block4/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block4/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block4/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block4/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block5/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block5/conv1 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block5/conv2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block5/conv2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group2/block5/conv3 input: [1, 256, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group2/block5/conv3 output: [1, 1024, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block0/conv1 input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block0/conv1 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block0/conv2 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block0/conv2 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block0/conv3 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block0/conv3 output: [1, 2048, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block0/convshortcut input: [1, 1024, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block0/convshortcut output: [1, 2048, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block1/conv1 input: [1, 2048, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block1/conv1 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block1/conv2 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block1/conv2 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block1/conv3 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block1/conv3 output: [1, 2048, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block2/conv1 input: [1, 2048, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block2/conv1 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block2/conv2 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block2/conv2 output: [1, 512, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m group3/block2/conv3 input: [1, 512, None, None]
+[32m[0806 14:55:26 @batch_norm.py:164][0m [5m[31mWRN[0m [BatchNorm] Using moving_mean/moving_variance in training.
+[32m[0806 14:55:26 @registry.py:129][0m group3/block2/conv3 output: [1, 2048, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m fpn input: [1, 256, None, None],[1, 512, None, None],[1, 1024, None, None],[1, 2048, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m fpn/lateral_1x1_c2 input: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:129][0m fpn/lateral_1x1_c2 output: [1, 256, None, None]
+[32m[0806 14:55:26 @registry.py:121][0m fpn/lateral_1x1_c3 input: [1, 512, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/lateral_1x1_c3 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/lateral_1x1_c4 input: [1, 1024, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/lateral_1x1_c4 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/lateral_1x1_c5 input: [1, 2048, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/lateral_1x1_c5 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/upsample_lat5 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/upsample_lat5 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/upsample_lat4 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/upsample_lat4 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/upsample_lat3 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/upsample_lat3 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/posthoc_3x3_p2 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/posthoc_3x3_p2 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/posthoc_3x3_p3 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/posthoc_3x3_p3 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/posthoc_3x3_p4 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/posthoc_3x3_p4 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/posthoc_3x3_p5 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/posthoc_3x3_p5 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m fpn/maxpool_p6 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn/maxpool_p6 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m fpn output: [1, 256, None, None],[1, 256, None, None],[1, 256, None, None],[1, 256, None, None],[1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m rpn input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m rpn/conv0 input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m rpn/conv0 output: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m rpn/class input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m rpn/class output: [1, 3, None, None]
+[32m[0806 14:55:27 @registry.py:121][0m rpn/box input: [1, 256, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m rpn/box output: [1, 12, None, None]
+[32m[0806 14:55:27 @registry.py:129][0m rpn output: [None, None, 3],[None, None, 3, 4]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn input: [None, 256, 7, 7]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn/fc6 input: [None, 256, 7, 7]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn/fc6 output: [None, 1024]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn/fc7 input: [None, 1024]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn/fc7 output: [None, 1024]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn/outputs input: [None, 1024]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn/outputs/class input: [None, 1024]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn/outputs/class output: [None, 81]
+[32m[0806 14:55:28 @registry.py:121][0m fastrcnn/outputs/box input: [None, 1024]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn/outputs/box output: [None, 324]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn/outputs output: [None, 81],[None, 81, 4]
+[32m[0806 14:55:28 @registry.py:129][0m fastrcnn output: [None, 81],[None, 81, 4]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/fcn0 input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/fcn0 output: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/fcn1 input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/fcn1 output: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/fcn2 input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/fcn2 output: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/fcn3 input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/fcn3 output: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/deconv input: [None, 256, 14, 14]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/deconv output: [None, 256, 28, 28]
+[32m[0806 14:55:31 @registry.py:121][0m maskrcnn/conv input: [None, 256, 28, 28]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn/conv output: [None, 80, 28, 28]
+[32m[0806 14:55:31 @registry.py:129][0m maskrcnn output: [None, 80, 28, 28]
+[32m[0806 14:55:31 @regularize.py:88][0m regularize_cost() found 63 variables to regularize.
+[32m[0806 14:55:31 @regularize.py:19][0m The following tensors will be regularized: group1/block0/conv1/W:0, group1/block0/conv2/W:0, group1/block0/conv3/W:0, group1/block0/convshortcut/W:0, group1/block1/conv1/W:0, group1/block1/conv2/W:0, group1/block1/conv3/W:0, group1/block2/conv1/W:0, group1/block2/conv2/W:0, group1/block2/conv3/W:0, group1/block3/conv1/W:0, group1/block3/conv2/W:0, group1/block3/conv3/W:0, group2/block0/conv1/W:0, group2/block0/conv2/W:0, group2/block0/conv3/W:0, group2/block0/convshortcut/W:0, group2/block1/conv1/W:0, group2/block1/conv2/W:0, group2/block1/conv3/W:0, group2/block2/conv1/W:0, group2/block2/conv2/W:0, group2/block2/conv3/W:0, group2/block3/conv1/W:0, group2/block3/conv2/W:0, group2/block3/conv3/W:0, group2/block4/conv1/W:0, group2/block4/conv2/W:0, group2/block4/conv3/W:0, group2/block5/conv1/W:0, group2/block5/conv2/W:0, group2/block5/conv3/W:0, group3/block0/conv1/W:0, group3/block0/conv2/W:0, group3/block0/conv3/W:0, group3/block0/convshortcut/W:0, group3/block1/conv1/W:0, group3/block1/conv2/W:0, group3/block1/conv3/W:0, group3/block2/conv1/W:0, group3/block2/conv2/W:0, group3/block2/conv3/W:0, fpn/lateral_1x1_c2/W:0, fpn/lateral_1x1_c3/W:0, fpn/lateral_1x1_c4/W:0, fpn/lateral_1x1_c5/W:0, fpn/posthoc_3x3_p2/W:0, fpn/posthoc_3x3_p3/W:0, fpn/posthoc_3x3_p4/W:0, fpn/posthoc_3x3_p5/W:0, rpn/conv0/W:0, rpn/class/W:0, rpn/box/W:0, fastrcnn/fc6/W:0, fastrcnn/fc7/W:0, fastrcnn/outputs/class/W:0, fastrcnn/outputs/box/W:0, maskrcnn/fcn0/W:0, maskrcnn/fcn1/W:0, maskrcnn/fcn2/W:0, maskrcnn/fcn3/W:0, maskrcnn/deconv/W:0, maskrcnn/conv/W:0
+[32m[0806 14:55:38 @training.py:318][0m 'sync_variables_from_main_tower' includes 0 operations.
+[32m[0806 14:55:38 @model_utils.py:64][0m [36mTrainable Variables: 
+[0mname                                   shape                    dim
+-------------------------------------  ------------------  --------
+group1/block0/conv1/W:0                [1, 1, 256, 128]       32768
+group1/block0/conv1/bn/gamma:0         [128]                    128
+group1/block0/conv1/bn/beta:0          [128]                    128
+group1/block0/conv2/W:0                [3, 3, 128, 128]      147456
+group1/block0/conv2/bn/gamma:0         [128]                    128
+group1/block0/conv2/bn/beta:0          [128]                    128
+group1/block0/conv3/W:0                [1, 1, 128, 512]       65536
+group1/block0/conv3/bn/gamma:0         [512]                    512
+group1/block0/conv3/bn/beta:0          [512]                    512
+group1/block0/convshortcut/W:0         [1, 1, 256, 512]      131072
+group1/block0/convshortcut/bn/gamma:0  [512]                    512
+group1/block0/convshortcut/bn/beta:0   [512]                    512
+group1/block1/conv1/W:0                [1, 1, 512, 128]       65536
+group1/block1/conv1/bn/gamma:0         [128]                    128
+group1/block1/conv1/bn/beta:0          [128]                    128
+group1/block1/conv2/W:0                [3, 3, 128, 128]      147456
+group1/block1/conv2/bn/gamma:0         [128]                    128
+group1/block1/conv2/bn/beta:0          [128]                    128
+group1/block1/conv3/W:0                [1, 1, 128, 512]       65536
+group1/block1/conv3/bn/gamma:0         [512]                    512
+group1/block1/conv3/bn/beta:0          [512]                    512
+group1/block2/conv1/W:0                [1, 1, 512, 128]       65536
+group1/block2/conv1/bn/gamma:0         [128]                    128
+group1/block2/conv1/bn/beta:0          [128]                    128
+group1/block2/conv2/W:0                [3, 3, 128, 128]      147456
+group1/block2/conv2/bn/gamma:0         [128]                    128
+group1/block2/conv2/bn/beta:0          [128]                    128
+group1/block2/conv3/W:0                [1, 1, 128, 512]       65536
+group1/block2/conv3/bn/gamma:0         [512]                    512
+group1/block2/conv3/bn/beta:0          [512]                    512
+group1/block3/conv1/W:0                [1, 1, 512, 128]       65536
+group1/block3/conv1/bn/gamma:0         [128]                    128
+group1/block3/conv1/bn/beta:0          [128]                    128
+group1/block3/conv2/W:0                [3, 3, 128, 128]      147456
+group1/block3/conv2/bn/gamma:0         [128]                    128
+group1/block3/conv2/bn/beta:0          [128]                    128
+group1/block3/conv3/W:0                [1, 1, 128, 512]       65536
+group1/block3/conv3/bn/gamma:0         [512]                    512
+group1/block3/conv3/bn/beta:0          [512]                    512
+group2/block0/conv1/W:0                [1, 1, 512, 256]      131072
+group2/block0/conv1/bn/gamma:0         [256]                    256
+group2/block0/conv1/bn/beta:0          [256]                    256
+group2/block0/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block0/conv2/bn/gamma:0         [256]                    256
+group2/block0/conv2/bn/beta:0          [256]                    256
+group2/block0/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block0/conv3/bn/gamma:0         [1024]                  1024
+group2/block0/conv3/bn/beta:0          [1024]                  1024
+group2/block0/convshortcut/W:0         [1, 1, 512, 1024]     524288
+group2/block0/convshortcut/bn/gamma:0  [1024]                  1024
+group2/block0/convshortcut/bn/beta:0   [1024]                  1024
+group2/block1/conv1/W:0                [1, 1, 1024, 256]     262144
+group2/block1/conv1/bn/gamma:0         [256]                    256
+group2/block1/conv1/bn/beta:0          [256]                    256
+group2/block1/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block1/conv2/bn/gamma:0         [256]                    256
+group2/block1/conv2/bn/beta:0          [256]                    256
+group2/block1/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block1/conv3/bn/gamma:0         [1024]                  1024
+group2/block1/conv3/bn/beta:0          [1024]                  1024
+group2/block2/conv1/W:0                [1, 1, 1024, 256]     262144
+group2/block2/conv1/bn/gamma:0         [256]                    256
+group2/block2/conv1/bn/beta:0          [256]                    256
+group2/block2/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block2/conv2/bn/gamma:0         [256]                    256
+group2/block2/conv2/bn/beta:0          [256]                    256
+group2/block2/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block2/conv3/bn/gamma:0         [1024]                  1024
+group2/block2/conv3/bn/beta:0          [1024]                  1024
+group2/block3/conv1/W:0                [1, 1, 1024, 256]     262144
+group2/block3/conv1/bn/gamma:0         [256]                    256
+group2/block3/conv1/bn/beta:0          [256]                    256
+group2/block3/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block3/conv2/bn/gamma:0         [256]                    256
+group2/block3/conv2/bn/beta:0          [256]                    256
+group2/block3/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block3/conv3/bn/gamma:0         [1024]                  1024
+group2/block3/conv3/bn/beta:0          [1024]                  1024
+group2/block4/conv1/W:0                [1, 1, 1024, 256]     262144
+group2/block4/conv1/bn/gamma:0         [256]                    256
+group2/block4/conv1/bn/beta:0          [256]                    256
+group2/block4/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block4/conv2/bn/gamma:0         [256]                    256
+group2/block4/conv2/bn/beta:0          [256]                    256
+group2/block4/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block4/conv3/bn/gamma:0         [1024]                  1024
+group2/block4/conv3/bn/beta:0          [1024]                  1024
+group2/block5/conv1/W:0                [1, 1, 1024, 256]     262144
+group2/block5/conv1/bn/gamma:0         [256]                    256
+group2/block5/conv1/bn/beta:0          [256]                    256
+group2/block5/conv2/W:0                [3, 3, 256, 256]      589824
+group2/block5/conv2/bn/gamma:0         [256]                    256
+group2/block5/conv2/bn/beta:0          [256]                    256
+group2/block5/conv3/W:0                [1, 1, 256, 1024]     262144
+group2/block5/conv3/bn/gamma:0         [1024]                  1024
+group2/block5/conv3/bn/beta:0          [1024]                  1024
+group3/block0/conv1/W:0                [1, 1, 1024, 512]     524288
+group3/block0/conv1/bn/gamma:0         [512]                    512
+group3/block0/conv1/bn/beta:0          [512]                    512
+group3/block0/conv2/W:0                [3, 3, 512, 512]     2359296
+group3/block0/conv2/bn/gamma:0         [512]                    512
+group3/block0/conv2/bn/beta:0          [512]                    512
+group3/block0/conv3/W:0                [1, 1, 512, 2048]    1048576
+group3/block0/conv3/bn/gamma:0         [2048]                  2048
+group3/block0/conv3/bn/beta:0          [2048]                  2048
+group3/block0/convshortcut/W:0         [1, 1, 1024, 2048]   2097152
+group3/block0/convshortcut/bn/gamma:0  [2048]                  2048
+group3/block0/convshortcut/bn/beta:0   [2048]                  2048
+group3/block1/conv1/W:0                [1, 1, 2048, 512]    1048576
+group3/block1/conv1/bn/gamma:0         [512]                    512
+group3/block1/conv1/bn/beta:0          [512]                    512
+group3/block1/conv2/W:0                [3, 3, 512, 512]     2359296
+group3/block1/conv2/bn/gamma:0         [512]                    512
+group3/block1/conv2/bn/beta:0          [512]                    512
+group3/block1/conv3/W:0                [1, 1, 512, 2048]    1048576
+group3/block1/conv3/bn/gamma:0         [2048]                  2048
+group3/block1/conv3/bn/beta:0          [2048]                  2048
+group3/block2/conv1/W:0                [1, 1, 2048, 512]    1048576
+group3/block2/conv1/bn/gamma:0         [512]                    512
+group3/block2/conv1/bn/beta:0          [512]                    512
+group3/block2/conv2/W:0                [3, 3, 512, 512]     2359296
+group3/block2/conv2/bn/gamma:0         [512]                    512
+group3/block2/conv2/bn/beta:0          [512]                    512
+group3/block2/conv3/W:0                [1, 1, 512, 2048]    1048576
+group3/block2/conv3/bn/gamma:0         [2048]                  2048
+group3/block2/conv3/bn/beta:0          [2048]                  2048
+fpn/lateral_1x1_c2/W:0                 [1, 1, 256, 256]       65536
+fpn/lateral_1x1_c2/b:0                 [256]                    256
+fpn/lateral_1x1_c3/W:0                 [1, 1, 512, 256]      131072
+fpn/lateral_1x1_c3/b:0                 [256]                    256
+fpn/lateral_1x1_c4/W:0                 [1, 1, 1024, 256]     262144
+fpn/lateral_1x1_c4/b:0                 [256]                    256
+fpn/lateral_1x1_c5/W:0                 [1, 1, 2048, 256]     524288
+fpn/lateral_1x1_c5/b:0                 [256]                    256
+fpn/posthoc_3x3_p2/W:0                 [3, 3, 256, 256]      589824
+fpn/posthoc_3x3_p2/b:0                 [256]                    256
+fpn/posthoc_3x3_p3/W:0                 [3, 3, 256, 256]      589824
+fpn/posthoc_3x3_p3/b:0                 [256]                    256
+fpn/posthoc_3x3_p4/W:0                 [3, 3, 256, 256]      589824
+fpn/posthoc_3x3_p4/b:0                 [256]                    256
+fpn/posthoc_3x3_p5/W:0                 [3, 3, 256, 256]      589824
+fpn/posthoc_3x3_p5/b:0                 [256]                    256
+rpn/conv0/W:0                          [3, 3, 256, 256]      589824
+rpn/conv0/b:0                          [256]                    256
+rpn/class/W:0                          [1, 1, 256, 3]           768
+rpn/class/b:0                          [3]                        3
+rpn/box/W:0                            [1, 1, 256, 12]         3072
+rpn/box/b:0                            [12]                      12
+fastrcnn/fc6/W:0                       [12544, 1024]       12845056
+fastrcnn/fc6/b:0                       [1024]                  1024
+fastrcnn/fc7/W:0                       [1024, 1024]         1048576
+fastrcnn/fc7/b:0                       [1024]                  1024
+fastrcnn/outputs/class/W:0             [1024, 81]             82944
+fastrcnn/outputs/class/b:0             [81]                      81
+fastrcnn/outputs/box/W:0               [1024, 324]           331776
+fastrcnn/outputs/box/b:0               [324]                    324
+maskrcnn/fcn0/W:0                      [3, 3, 256, 256]      589824
+maskrcnn/fcn0/b:0                      [256]                    256
+maskrcnn/fcn1/W:0                      [3, 3, 256, 256]      589824
+maskrcnn/fcn1/b:0                      [256]                    256
+maskrcnn/fcn2/W:0                      [3, 3, 256, 256]      589824
+maskrcnn/fcn2/b:0                      [256]                    256
+maskrcnn/fcn3/W:0                      [3, 3, 256, 256]      589824
+maskrcnn/fcn3/b:0                      [256]                    256
+maskrcnn/deconv/W:0                    [2, 2, 256, 256]      262144
+maskrcnn/deconv/b:0                    [256]                    256
+maskrcnn/conv/W:0                      [1, 1, 256, 80]        20480
+maskrcnn/conv/b:0                      [80]                      80[36m
+Total #vars=168, #params=44175092, size=168.51MB[0m
+[32m[0806 14:55:38 @base.py:174][0m Setup callbacks graph ...
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:38 @argtools.py:152][0m [5m[31mWRN[0m Install python-prctl so that processes can be cleaned with guarantee.
+[32m[0806 14:55:41 @coco.py:76][0m Instances loaded from /home/duygiang/deep-learning/COCO/DIR/annotations/instances_minival2014.json.
+[32m[0806 14:55:41 @timer.py:48][0m Load Groundtruth Boxes for minival2014 finished, time:0.0008sec.
+[32m[0806 14:55:41 @summary.py:38][0m Maintain moving average summary of 76 tensors in collection MOVING_SUMMARY_OPS.
+[32m[0806 14:55:41 @summary.py:75][0m Summarizing collection 'summaries' of size 80.
+[32m[0806 14:55:44 @base.py:192][0m Creating the session ...
+[32m[0806 14:56:03 @base.py:198][0m Initializing the session ...
+[32m[0806 14:56:03 @sessinit.py:207][0m Variables to restore from dict: group2/block2/conv1/bn/variance/EMA:0, group0/block0/conv3/bn/beta:0, group1/block0/convshortcut/bn/mean/EMA:0, group2/block3/conv3/bn/gamma:0, group2/block4/conv1/bn/beta:0, group2/block0/conv3/bn/mean/EMA:0, group0/block2/conv1/bn/beta:0, group2/block4/conv3/bn/mean/EMA:0, group0/block1/conv2/bn/variance/EMA:0, group2/block2/conv1/bn/mean/EMA:0, group0/block2/conv2/bn/mean/EMA:0, group2/block0/conv1/bn/beta:0, group2/block5/conv1/bn/gamma:0, group0/block2/conv3/bn/variance/EMA:0, group0/block1/conv2/bn/gamma:0, group1/block1/conv2/bn/gamma:0, group3/block1/conv1/bn/beta:0, group2/block5/conv3/bn/mean/EMA:0, group1/block0/conv2/bn/gamma:0, group0/block0/conv3/bn/variance/EMA:0, group3/block0/conv1/W:0, group0/block2/conv3/bn/gamma:0, group1/block2/conv3/W:0, group0/block2/conv2/bn/gamma:0, group2/block5/conv2/bn/gamma:0, group0/block2/conv3/W:0, group2/block2/conv3/W:0, conv0/bn/mean/EMA:0, group0/block0/conv1/bn/variance/EMA:0, group2/block1/conv2/bn/variance/EMA:0, group0/block0/conv3/bn/mean/EMA:0, group1/block1/conv2/bn/mean/EMA:0, group1/block2/conv2/bn/variance/EMA:0, group2/block1/conv1/bn/variance/EMA:0, group0/block1/conv3/bn/variance/EMA:0, group0/block0/conv1/bn/mean/EMA:0, group0/block1/conv1/bn/gamma:0, group3/block0/convshortcut/W:0, group2/block0/convshortcut/bn/mean/EMA:0, group0/block2/conv3/bn/mean/EMA:0, group1/block0/convshortcut/bn/beta:0, group0/block1/conv1/bn/variance/EMA:0, group2/block3/conv2/bn/beta:0, group3/block1/conv3/bn/variance/EMA:0, group0/block2/conv2/bn/beta:0, group2/block2/conv1/bn/beta:0, group2/block5/conv3/bn/variance/EMA:0, group3/block1/conv1/bn/mean/EMA:0, group0/block0/convshortcut/W:0, group0/block1/conv2/bn/mean/EMA:0, group0/block0/conv2/bn/mean/EMA:0, group0/block1/conv3/W:0, group3/block0/conv2/bn/mean/EMA:0, group3/block2/conv3/bn/beta:0, group0/block1/conv3/bn/beta:0, group0/block0/conv2/bn/variance/EMA:0, group2/block2/conv2/W:0, group1/block0/conv3/bn/mean/EMA:0, group2/block2/conv2/bn/variance/EMA:0, group2/block2/conv2/bn/mean/EMA:0, group3/block2/conv1/W:0, group0/block1/conv2/bn/beta:0, group2/block3/conv3/bn/variance/EMA:0, group2/block5/conv2/bn/mean/EMA:0, group0/block1/conv1/bn/mean/EMA:0, group1/block3/conv2/bn/variance/EMA:0, group3/block2/conv3/W:0, group2/block4/conv1/bn/gamma:0, group3/block0/conv3/bn/mean/EMA:0, group2/block5/conv3/W:0, group1/block2/conv1/bn/gamma:0, group1/block0/conv2/W:0, group1/block1/conv3/bn/gamma:0, group0/block2/conv2/W:0, group0/block0/conv1/bn/gamma:0, group3/block2/conv2/bn/variance/EMA:0, group2/block0/conv1/bn/variance/EMA:0, group2/block0/convshortcut/bn/beta:0, group2/block0/conv1/bn/mean/EMA:0, group1/block1/conv1/bn/gamma:0, group2/block3/conv3/bn/mean/EMA:0, group1/block0/conv3/W:0, group1/block3/conv1/W:0, conv0/bn/gamma:0, group2/block1/conv2/bn/mean/EMA:0, group1/block2/conv2/bn/gamma:0, group2/block2/conv2/bn/beta:0, group2/block3/conv1/W:0, group1/block3/conv1/bn/mean/EMA:0, group1/block2/conv3/bn/variance/EMA:0, group2/block4/conv2/W:0, group1/block3/conv3/bn/beta:0, group2/block4/conv2/bn/variance/EMA:0, group2/block3/conv1/bn/variance/EMA:0, group1/block3/conv2/bn/gamma:0, group0/block2/conv1/bn/gamma:0, group3/block1/conv1/bn/variance/EMA:0, group2/block3/conv1/bn/beta:0, group1/block1/conv3/bn/beta:0, group3/block0/conv1/bn/mean/EMA:0, group0/block0/conv3/W:0, group3/block1/conv2/W:0, group1/block2/conv3/bn/mean/EMA:0, group0/block0/convshortcut/bn/beta:0, group1/block2/conv1/bn/beta:0, group0/block0/conv2/bn/gamma:0, group3/block0/conv2/W:0, group2/block0/conv2/bn/beta:0, group2/block3/conv3/W:0, group0/block2/conv1/bn/variance/EMA:0, group2/block4/conv1/W:0, group2/block2/conv3/bn/beta:0, group3/block2/conv1/bn/gamma:0, group1/block2/conv3/bn/gamma:0, group2/block1/conv3/bn/gamma:0, group2/block2/conv3/bn/gamma:0, group1/block1/conv3/W:0, group3/block0/conv3/bn/variance/EMA:0, group2/block4/conv2/bn/gamma:0, group3/block1/conv2/bn/mean/EMA:0, group1/block2/conv3/bn/beta:0, group1/block0/conv1/bn/gamma:0, group2/block2/conv1/bn/gamma:0, group1/block0/conv1/bn/beta:0, group3/block0/conv3/W:0, group1/block1/conv2/bn/variance/EMA:0, group2/block0/conv3/bn/variance/EMA:0, group3/block2/conv1/bn/mean/EMA:0, group2/block1/conv1/W:0, group3/block1/conv1/W:0, group3/block0/conv2/bn/variance/EMA:0, group2/block0/conv1/bn/gamma:0, group1/block3/conv1/bn/beta:0, group2/block5/conv3/bn/gamma:0, group3/block1/conv3/bn/beta:0, group3/block0/convshortcut/bn/variance/EMA:0, group3/block1/conv3/bn/mean/EMA:0, group2/block0/conv2/bn/gamma:0, group2/block5/conv1/bn/variance/EMA:0, group1/block0/convshortcut/bn/gamma:0, group1/block1/conv1/bn/variance/EMA:0, group3/block2/conv2/bn/mean/EMA:0, group1/block1/conv1/bn/beta:0, group1/block3/conv3/bn/mean/EMA:0, group3/block2/conv2/bn/beta:0, group3/block0/conv1/bn/variance/EMA:0, group2/block4/conv3/W:0, group1/block3/conv3/W:0, group0/block0/convshortcut/bn/gamma:0, group1/block3/conv3/bn/variance/EMA:0, group2/block2/conv3/bn/variance/EMA:0, conv0/bn/beta:0, group2/block3/conv2/bn/variance/EMA:0, group2/block5/conv3/bn/beta:0, group2/block5/conv1/bn/mean/EMA:0, group1/block2/conv2/bn/mean/EMA:0, group1/block0/conv3/bn/gamma:0, group2/block1/conv3/W:0, group2/block3/conv2/W:0, group3/block0/convshortcut/bn/mean/EMA:0, group2/block4/conv1/bn/variance/EMA:0, group2/block0/conv2/W:0, group0/block2/conv1/bn/mean/EMA:0, group1/block2/conv1/bn/mean/EMA:0, group1/block1/conv3/bn/mean/EMA:0, group2/block4/conv3/bn/variance/EMA:0, group3/block2/conv2/W:0, group3/block2/conv1/bn/variance/EMA:0, group3/block0/conv1/bn/beta:0, group3/block2/conv3/bn/variance/EMA:0, group2/block5/conv1/W:0, group2/block0/convshortcut/bn/gamma:0, group2/block2/conv2/bn/gamma:0, group1/block1/conv2/bn/beta:0, group3/block0/conv1/bn/gamma:0, group2/block3/conv2/bn/mean/EMA:0, group3/block0/convshortcut/bn/gamma:0, group3/block2/conv3/bn/gamma:0, conv0/bn/variance/EMA:0, group2/block4/conv2/bn/beta:0, group2/block1/conv1/bn/gamma:0, group3/block1/conv2/bn/gamma:0, group3/block2/conv1/bn/beta:0, group1/block3/conv2/bn/beta:0, group1/block0/conv3/bn/beta:0, group1/block0/conv2/bn/mean/EMA:0, group1/block1/conv1/bn/mean/EMA:0, group1/block3/conv1/bn/gamma:0, group2/block1/conv3/bn/mean/EMA:0, group1/block0/conv2/bn/beta:0, group2/block0/conv3/bn/beta:0, group2/block0/convshortcut/W:0, group2/block1/conv2/bn/gamma:0, group0/block2/conv3/bn/beta:0, group1/block0/conv1/bn/mean/EMA:0, group2/block3/conv2/bn/gamma:0, group0/block1/conv3/bn/mean/EMA:0, group2/block1/conv2/W:0, group2/block3/conv1/bn/gamma:0, group1/block0/conv1/W:0, group1/block0/convshortcut/W:0, group3/block0/conv2/bn/beta:0, group3/block1/conv2/bn/beta:0, group3/block0/convshortcut/bn/beta:0, group0/block1/conv1/W:0, group0/block0/conv1/bn/beta:0, group1/block0/conv2/bn/variance/EMA:0, group0/block0/conv2/W:0, group1/block0/convshortcut/bn/variance/EMA:0, group0/block0/conv2/bn/beta:0, group3/block1/conv2/bn/variance/EMA:0, group2/block2/conv3/bn/mean/EMA:0, group1/block1/conv1/W:0, group1/block3/conv2/bn/mean/EMA:0, conv0/W:0, group2/block1/conv1/bn/mean/EMA:0, group3/block2/conv2/bn/gamma:0, group2/block1/conv1/bn/beta:0, group2/block5/conv2/W:0, group2/block4/conv3/bn/beta:0, group2/block1/conv3/bn/variance/EMA:0, group2/block0/conv2/bn/variance/EMA:0, group2/block4/conv2/bn/mean/EMA:0, group2/block2/conv1/W:0, group0/block2/conv2/bn/variance/EMA:0, group1/block2/conv2/bn/beta:0, group1/block3/conv3/bn/gamma:0, group0/block2/conv1/W:0, group2/block0/conv1/W:0, group3/block2/conv3/bn/mean/EMA:0, group0/block1/conv1/bn/beta:0, group0/block1/conv2/W:0, group1/block1/conv3/bn/variance/EMA:0, group2/block1/conv3/bn/beta:0, group1/block0/conv1/bn/variance/EMA:0, group1/block1/conv2/W:0, group3/block1/conv3/bn/gamma:0, group1/block2/conv1/bn/variance/EMA:0, group3/block0/conv3/bn/gamma:0, group2/block5/conv1/bn/beta:0, group0/block0/convshortcut/bn/mean/EMA:0, group2/block0/convshortcut/bn/variance/EMA:0, group0/block0/convshortcut/bn/variance/EMA:0, group2/block1/conv2/bn/beta:0, group1/block0/conv3/bn/variance/EMA:0, group3/block1/conv1/bn/gamma:0, group2/block3/conv3/bn/beta:0, group2/block5/conv2/bn/variance/EMA:0, group2/block5/conv2/bn/beta:0, group2/block4/conv1/bn/mean/EMA:0, group2/block0/conv2/bn/mean/EMA:0, group3/block0/conv2/bn/gamma:0, group2/block0/conv3/W:0, group0/block0/conv3/bn/gamma:0, group2/block4/conv3/bn/gamma:0, group1/block3/conv2/W:0, group1/block2/conv1/W:0, group0/block1/conv3/bn/gamma:0, group0/block0/conv1/W:0, group2/block3/conv1/bn/mean/EMA:0, group1/block2/conv2/W:0, group2/block0/conv3/bn/gamma:0, group1/block3/conv1/bn/variance/EMA:0, group3/block0/conv3/bn/beta:0, group3/block1/conv3/W:0
+[32m[0806 14:56:03 @sessinit.py:90][0m [5m[31mWRN[0m The following variables are in the graph, but not found in the dict: fastrcnn/fc6/W:0, fastrcnn/fc6/b:0, fastrcnn/fc7/W:0, fastrcnn/fc7/b:0, fastrcnn/outputs/box/W:0, fastrcnn/outputs/box/b:0, fastrcnn/outputs/class/W:0, fastrcnn/outputs/class/b:0, fpn/lateral_1x1_c2/W:0, fpn/lateral_1x1_c2/b:0, fpn/lateral_1x1_c3/W:0, fpn/lateral_1x1_c3/b:0, fpn/lateral_1x1_c4/W:0, fpn/lateral_1x1_c4/b:0, fpn/lateral_1x1_c5/W:0, fpn/lateral_1x1_c5/b:0, fpn/posthoc_3x3_p2/W:0, fpn/posthoc_3x3_p2/b:0, fpn/posthoc_3x3_p3/W:0, fpn/posthoc_3x3_p3/b:0, fpn/posthoc_3x3_p4/W:0, fpn/posthoc_3x3_p4/b:0, fpn/posthoc_3x3_p5/W:0, fpn/posthoc_3x3_p5/b:0, global_step:0, learning_rate:0, maskrcnn/conv/W:0, maskrcnn/conv/b:0, maskrcnn/deconv/W:0, maskrcnn/deconv/b:0, maskrcnn/fcn0/W:0, maskrcnn/fcn0/b:0, maskrcnn/fcn1/W:0, maskrcnn/fcn1/b:0, maskrcnn/fcn2/W:0, maskrcnn/fcn2/b:0, maskrcnn/fcn3/W:0, maskrcnn/fcn3/b:0, rpn/box/W:0, rpn/box/b:0, rpn/class/W:0, rpn/class/b:0, rpn/conv0/W:0, rpn/conv0/b:0
+[32m[0806 14:56:03 @sessinit.py:90][0m [5m[31mWRN[0m The following variables are in the dict, but not found in the graph: linear/W:0, linear/b:0
+[32m[0806 14:56:03 @sessinit.py:220][0m Restoring from dict ...
+[32m[0806 14:56:36 @base.py:205][0m Graph Finalized.
+[32m[0806 14:56:36 @concurrency.py:37][0m Starting EnqueueThread QueueInput/input_queue ...
+[32m[0806 14:56:36 @graph.py:73][0m Running Op sync_variables/sync_variables_from_main_tower ...
+[32m[0806 14:56:38 @param.py:148][0m [HyperParamSetter] At global_step=0, learning_rate will change to 0.02640000
+[32m[0806 14:56:38 @train.py:481][0m [EvalCallback] Will evaluate at epoch [960, 1920, 2880, 3840, 4800, 5760]
+[32m[0806 14:56:42 @base.py:237][0m Start Epoch 1 ...
