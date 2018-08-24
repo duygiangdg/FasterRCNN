@@ -21,7 +21,7 @@ from ..tfutils.tower import get_current_tower_context
 from ..tfutils.dependency import dependency_of_fetches
 from ..utils import logger
 from ..utils.concurrency import ShareSessionThread
-from ..utils.develop import log_deprecated, deprecated
+from ..utils.develop import deprecated
 from ..callbacks.base import Callback, CallbackFactory
 from ..callbacks.graph import RunOp
 
@@ -36,10 +36,27 @@ def _get_reset_callback(df):
     return CallbackFactory(setup_graph=lambda _: df.reset_state())
 
 
+def _make_feeds(placeholders, datapoint):
+    assert len(datapoint) == len(placeholders), \
+        "Size of datapoint and placeholders are different: {} != {}".format(
+            len(datapoint), len(placeholders))
+
+    if isinstance(datapoint, (list, tuple)):
+        return dict(zip(placeholders, datapoint))
+    elif isinstance(datapoint, dict):
+        ret = {p: datapoint[p.op.name] for p in placeholders}
+        return ret
+    else:
+        raise TypeError("Got a datapoint of type {}!".format(type(datapoint)))
+
+
 class PlaceholderInput(InputSource):
     """
     Just produce placeholders as input tensors.
     """
+    def __init__(self):
+        pass
+
     def _setup(self, inputs):
         self._all_placehdrs = [v.build_placeholder_reuse() for v in inputs]
 
@@ -66,7 +83,7 @@ class FeedInput(InputSource):
         def _before_run(self, _):
             dp = next(self._itr)
             assert len(dp) == len(self._placeholders), "[FeedInput] datapoints and inputs are of different length!"
-            feed = dict(zip(self._placeholders, dp))
+            feed = _make_feeds(self._placeholders, dp)
             return tf.train.SessionRunArgs(fetches=[], feed_dict=feed)
 
         def _reset(self):
@@ -139,7 +156,7 @@ class EnqueueThread(ShareSessionThread):
                         self._running.wait()
 
                     dp = next(self._itr)
-                    feed = dict(zip(self.placehdrs, dp))
+                    feed = _make_feeds(self.placehdrs, dp)
                     # _, sz = sess.run([self.op, self._sz], feed_dict=feed)
                     self.op.run(feed_dict=feed)
             except (tf.errors.CancelledError, tf.errors.OutOfRangeError, DataFlowTerminated):
@@ -470,12 +487,13 @@ class TFDatasetInput(FeedfreeInput):
         dataset, if the dataflow iterator can terminate.
 
         Args:
-            df (DataFlow)
+            df (DataFlow): a dataflow which produces lists
             types([tf.DType])
 
         Returns:
             (tf.data.Dataset)
         """
+        # TODO theoretically it can support dict
         assert isinstance(df, DataFlow), df
         assert isinstance(types, (list, tuple)), types
         df = MapData(df, lambda dp: tuple(dp))
@@ -520,7 +538,7 @@ class StagingInput(FeedfreeInput):
             logger.info("Pre-filling StagingArea ...")
             for k in range(self.nr_stage):
                 self.stage_op.run()
-            logger.info("{} element{} put into StagingArea.".format(
+            logger.info("{} element{} put into StagingArea on each tower.".format(
                 self.nr_stage, "s were" if self.nr_stage > 1 else " was"))
 
         def _before_run(self, ctx):
@@ -534,21 +552,18 @@ class StagingInput(FeedfreeInput):
             if dependency_of_fetches(fetches, self._check_dependency_op):
                 return self.fetches
 
-    def __init__(self, input, towers=None, nr_stage=1, device=None):
+    def __init__(self, input, nr_stage=1, device=None):
         """
         Args:
             input (FeedfreeInput):
             nr_stage: number of elements to prefetch into each StagingArea, at the beginning.
                 Since enqueue and dequeue are synchronized, prefetching 1 element should be sufficient.
-            towers: deprecated
             device (str or None): if not None, place the StagingArea on a specific device. e.g., '/cpu:0'.
                 Otherwise, they are placed under where `get_inputs_tensors`
                 gets called, which could be unspecified in case of simple trainers.
         """
         assert isinstance(input, FeedfreeInput), input
         self._input = input
-        if towers is not None:
-            log_deprecated("StagingInput(towers=)", "Devices are handled automatically.", "2018-03-31")
 
         self._nr_stage = nr_stage
         self._areas = []

@@ -11,7 +11,13 @@ __all__ = ['config', 'finalize_configs']
 
 
 class AttrDict():
+
+    _freezed = False
+    """ Avoid accidental creation of new hierarchies. """
+
     def __getattr__(self, name):
+        if self._freezed:
+            raise AttributeError(name)
         ret = AttrDict()
         setattr(self, name, ret)
         return ret
@@ -24,7 +30,7 @@ class AttrDict():
     def to_dict(self):
         """Convert to a nested dict. """
         return {k: v.to_dict() if isinstance(v, AttrDict) else v
-                for k, v in self.__dict__.items()}
+                for k, v in self.__dict__.items() if not k.startswith('_')}
 
     def update_args(self, args):
         """Update from command line args. """
@@ -43,6 +49,9 @@ class AttrDict():
                 v = eval(v)
             setattr(dic, key, v)
 
+    def freeze(self):
+        self._freezed = True
+
     # avoid silent bugs
     def __eq__(self, _):
         raise NotImplementedError()
@@ -60,14 +69,14 @@ _C.MODE_MASK = True        # FasterRCNN or MaskRCNN
 _C.MODE_FPN = False
 
 # dataset -----------------------
-_C.DATA.BASEDIR = '../COCO/DIR'
+_C.DATA.BASEDIR = '/path/to/your/COCO/DIR'
 _C.DATA.TRAIN = ['train2014', 'valminusminival2014']   # i.e., trainval35k
 _C.DATA.VAL = 'minival2014'   # For now, only support evaluation on single dataset
 _C.DATA.NUM_CATEGORY = 80    # 80 categories.
 _C.DATA.CLASS_NAMES = []  # NUM_CLASS (NUM_CATEGORY+1) strings, to be populated later by data loader. The first is BG.
 
 # basemodel ----------------------
-_C.BACKBONE.WEIGHTS = '../ImageNet-ResNet50.npz'   # /path/to/weights.npz
+_C.BACKBONE.WEIGHTS = ''   # /path/to/weights.npz
 _C.BACKBONE.RESNET_NUM_BLOCK = [3, 4, 6, 3]     # for resnet50
 # RESNET_NUM_BLOCK = [3, 4, 23, 3]    # for resnet101
 _C.BACKBONE.FREEZE_AFFINE = False   # do not train affine parameters inside norm layers
@@ -88,16 +97,18 @@ _C.TRAIN.NUM_GPUS = None         # by default, will be set from code
 _C.TRAIN.WEIGHT_DECAY = 1e-4
 _C.TRAIN.BASE_LR = 1e-2  # defined for a total batch size of 8. Otherwise it will be adjusted automatically
 _C.TRAIN.WARMUP = 1000   # in terms of iterations. This is not affected by #GPUs
-_C.TRAIN.STEPS_PER_EPOCH = 50
+_C.TRAIN.STEPS_PER_EPOCH = 500
 
-# Schedule means "steps" only when total batch size is 8.
+# LR_SCHEDULE means "steps" only when total batch size is 8.
 # Otherwise the actual steps to decrease learning rate are computed from the schedule.
 # LR_SCHEDULE = [120000, 160000, 180000]  # "1x" schedule in detectron
 _C.TRAIN.LR_SCHEDULE = [240000, 320000, 360000]    # "2x" schedule in detectron
+_C.TRAIN.NUM_EVALS = 20  # number of evaluations to run during training
 
 # preprocessing --------------------
 # Alternative old (worse & faster) setting: 600, 1024
-_C.PREPROC.SHORT_EDGE_SIZE = 800
+_C.PREPROC.TRAIN_SHORT_EDGE_SIZE = [800, 800]  # [min, max] to sample from
+_C.PREPROC.TEST_SHORT_EDGE_SIZE = 800
 _C.PREPROC.MAX_SIZE = 1333
 # mean and std in RGB order.
 # Un-scaled version: [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
@@ -147,15 +158,17 @@ _C.FPN.FRCNN_HEAD_FUNC = 'fastrcnn_2fc_head'
 # choices: fastrcnn_2fc_head, fastrcnn_4conv1fc_{,gn_}head
 _C.FPN.FRCNN_CONV_HEAD_DIM = 256
 _C.FPN.FRCNN_FC_HEAD_DIM = 1024
-_C.FPN.MRCNN_HEAD_FUNC = 'maskrcnn_up4conv_head'
-# choices: maskrcnn_up4conv_{,gn_}head
+_C.FPN.MRCNN_HEAD_FUNC = 'maskrcnn_up4conv_head'   # choices: maskrcnn_up4conv_{,gn_}head
 
 # Mask-RCNN
 _C.MRCNN.HEAD_DIM = 256
 
 # testing -----------------------
 _C.TEST.FRCNN_NMS_THRESH = 0.5
-_C.TEST.RESULT_SCORE_THRESH = 1e-4
+
+# Smaller threshold value gives significantly better mAP. But we use 0.05 for consistency with Detectron.
+# mAP with 1e-4 threshold can be found at https://github.com/tensorpack/tensorpack/commit/26321ae58120af2568bdbf2269f32aa708d425a8#diff-61085c48abee915b584027e1085e1043  # noqa
+_C.TEST.RESULT_SCORE_THRESH = 0.05
 _C.TEST.RESULT_SCORE_THRESH_VIS = 0.3   # only visualize confident results
 _C.TEST.RESULTS_PER_IM = 100
 
@@ -208,4 +221,5 @@ def finalize_configs(is_training):
         # autotune is too slow for inference
         os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
 
+    _C.freeze()
     logger.info("Config: ------------------------------------------\n" + str(_C))

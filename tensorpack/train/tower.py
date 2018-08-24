@@ -6,6 +6,8 @@ import six
 from abc import abstractmethod, ABCMeta
 
 from ..utils.argtools import call_only_once, memoized
+from ..utils.develop import HIDE_DOC
+from ..utils import logger
 from ..input_source import PlaceholderInput
 from ..predict.base import OnlinePredictor
 
@@ -29,6 +31,11 @@ class TowerTrainer(Trainer):
     """
 
     _tower_func = None
+    _predictors = []
+    """
+    List of OnlinePredictor ever created for this trainer.
+    It is maintained for internal use.
+    """
 
     @call_only_once
     def _set_tower_func(self, tower_func):
@@ -39,7 +46,8 @@ class TowerTrainer(Trainer):
     def tower_func(self):
         """
         A :class:`TowerFuncWrapper` instance.
-        A callable which takes some input tensors and builds one replicate of the model.
+        See [tutorial on tower function](http://tensorpack.readthedocs.io/tutorial/trainer.html#tower-trainer)
+        for more information.
         """
         return self._tower_func
 
@@ -63,6 +71,14 @@ class TowerTrainer(Trainer):
             access the tower handles by either indices or names.
 
         It is accessbile only after the graph is set up.
+        With :meth:`towers`, you can then access many attributes of each tower:
+
+        Example:
+
+        .. code-block:: python
+
+            # Access the conv1/output tensor in the first training tower
+            trainer.towers.training()[0].get_tensor('conv1/output')
         """
         return self.tower_func.towers
 
@@ -85,15 +101,16 @@ class TowerTrainer(Trainer):
             # in the graph:
             interesting_tensor = tf.identity(x, name='fun')
             # in _setup_graph callback method:
-            self._predictor = self.trainer.get_predictor(['input1'], ['fun'])
+            self._predictor = self.trainer.get_predictor(['input1', 'input2'], ['fun'])
             # After session is initialized (see Tutorials - Write a Callback), can use it by:
-            outputs = self._predictor(inputs)
+            outputs = self._predictor(input1, input2)
 
         The CycleGAN example and DQN example have more concrete use of this method.
         """
         assert self.tower_func is not None, "Must set tower_func on the trainer to use get_predictor()!"
         tower_name = 'tower-pred-{}'.format(device) if device >= 0 else 'tower-pred-cpu'
-        device = '/gpu:{}'.format(device) if device >= 0 else '/cpu:0'
+        device_id = device
+        device = '/gpu:{}'.format(device_id) if device_id >= 0 else '/cpu:0'
 
         try:
             tower = self.tower_func.towers[tower_name]
@@ -105,22 +122,36 @@ class TowerTrainer(Trainer):
             input = PlaceholderInput()
             input.setup(self.inputs_desc)
 
+            vs_name = self._vs_name_for_predictor(device_id)
             with tf.variable_scope(tf.get_variable_scope(), reuse=True), \
                     tf.device(device), PredictTowerContext(
-                    tower_name, vs_name=self._main_tower_vs_name):
+                        tower_name, vs_name=vs_name):
+                logger.info("Building graph for predict tower '{}' on device {} {}...".format(
+                    tower_name, device,
+                    "with variable scope '{}'".format(vs_name) if vs_name else ''))
                 self.tower_func(*input.get_input_tensors())
             tower = self.tower_func.towers[tower_name]
         input_tensors = tower.get_tensors(input_names)
         output_tensors = tower.get_tensors(output_names)
-        return OnlinePredictor(input_tensors, output_tensors)
+        predictor = OnlinePredictor(input_tensors, output_tensors)
+        self._predictors.append(predictor)
+        return predictor
 
-    @property
-    def _main_tower_vs_name(self):
-        """
-        The vs name for the "main" copy of the model,
-        to be used to build predictors.
-        """
-        return ""
+    @HIDE_DOC
+    @call_only_once
+    def initialize(self, session_creator, session_init):
+        super(TowerTrainer, self).initialize(session_creator, session_init)
+        # Predictors are created before creating the session, so they don't have an associated session.
+        for pred in self._predictors:
+            pred.sess = self.sess
+
+    def _vs_name_for_predictor(self, device):
+        towers = self.towers.training()
+        available_ids = list(range(len(towers)))
+        if device in available_ids:
+            return towers[device].vs_name
+        else:
+            return towers[0].vs_name
 
 
 @six.add_metaclass(ABCMeta)
