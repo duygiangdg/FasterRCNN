@@ -20,6 +20,8 @@ def maskrcnn_loss(mask_logits, fg_labels, fg_target_masks):
         fg_labels: #fg, in 1~#class
         fg_target_masks: #fgxhxw, int
     """
+    _mask_logits, _fg_labels, _fg_target_masks = mask_logits, fg_labels, fg_target_masks
+
     num_fg = tf.size(fg_labels)
     indices = tf.stack([tf.range(num_fg), tf.to_int32(fg_labels) - 1], axis=1)  # #fgx2
     mask_logits = tf.gather_nd(mask_logits, indices)  # #fgxhxw
@@ -35,6 +37,8 @@ def maskrcnn_loss(mask_logits, fg_labels, fg_target_masks):
     loss = tf.nn.sigmoid_cross_entropy_with_logits(
         labels=fg_target_masks, logits=mask_logits)
     loss = tf.reduce_mean(loss, name='maskrcnn_loss')
+
+    print('maskrcnn_loss', loss)
 
     pred_label = mask_probs > 0.5
     truth_label = fg_target_masks > 0.5
