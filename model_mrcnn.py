@@ -52,9 +52,10 @@ def maskrcnn_loss(mask_logits, fg_labels, fg_target_masks):
     indices = tf.stack([tf.range(num_fg), fg_labels], axis=1)  # #fgx2
     mask_logits = tf.gather_nd(mask_logits, indices)
 
-    loss = tf.losses.huber_loss(
-        fg_target_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    loss = tf.truediv(loss, tf.to_float(tf.shape(fg_labels)[0]), name='maskrcnn_loss')
+    # loss = tf.losses.huber_loss(
+    #     fg_target_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
+    # loss = tf.truediv(loss, tf.to_float(tf.shape(fg_labels)[0]), name='maskrcnn_loss')
+    loss = tf.to_float(1, name='loss')
     accuracy = tf.to_float(1, name='accuracy')
     pos_accuracy = tf.to_float(1, name='pos_accuracy')
     fg_pixel_ratio = tf.to_float(1, name='fg_pixel_ratio')
