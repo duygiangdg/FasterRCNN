@@ -117,7 +117,7 @@ class ResNetC4Model(DetectionModel):
             tf.placeholder(tf.int64, (None,), 'gt_labels')]  # all > 0
         if cfg.MODE_MASK:
             ret.append(
-                tf.placeholder(tf.uint8, (None, 5), 'gt_masks')
+                tf.placeholder(tf.float32, (None, 5), 'gt_masks')
             )   # NR_GT x height x width
         return ret
 
@@ -180,16 +180,15 @@ class ResNetC4Model(DetectionModel):
                 mask_logits = maskrcnn_upXconv_head(
                     'maskrcnn', fg_feature, cfg.DATA.NUM_CATEGORY, num_convs=0)   # #fg x #cat x 14x14
 
-            #     target_masks_for_fg = crop_and_resize(
-            #         tf.expand_dims(inputs['gt_masks'], 1),
-            #         fastrcnn_head.fg_input_boxes(),
-            #         fg_inds_wrt_gt, 14,
-            #         pad_border=False)  # nfg x 1x14x14
-            #     target_masks_for_fg = tf.squeeze(target_masks_for_fg, 1, 'sampled_fg_mask_targets')
-            #     mrcnn_loss = maskrcnn_loss(mask_logits, fastrcnn_head.fg_labels(), target_masks_for_fg)
-            # else:
-            #     mrcnn_loss = 0.0
-            mrcnn_loss = 0.0
+                # target_masks_for_fg = crop_and_resize(
+                #     tf.expand_dims(inputs['gt_masks'], 1),
+                #     fastrcnn_head.fg_input_boxes(),
+                #     fg_inds_wrt_gt, 14,
+                #     pad_border=False)  # nfg x 1x14x14
+                # target_masks_for_fg = tf.squeeze(target_masks_for_fg, 1, 'sampled_fg_mask_targets')
+                mrcnn_loss = maskrcnn_loss(mask_logits, fastrcnn_head.fg_labels(), inputs['gt_masks'])
+            else:
+                mrcnn_loss = 0.0
 
             wd_cost = regularize_cost(
                 '.*/W', l2_regularizer(cfg.TRAIN.WEIGHT_DECAY), name='wd_cost')

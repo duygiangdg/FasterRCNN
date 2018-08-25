@@ -364,8 +364,8 @@ def get_train_dataflow():
             for polys in segmentation:
                 polys = [aug.augment_coords(p, params) for p in polys]
                 masks.append(segmentation_to_mask(polys, im.shape[0], im.shape[1]))
-            masks = [[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]]
-            masks = np.asarray(masks, dtype='uint8')    # values in {0, 1}
+            masks = [[1.0, 2.0, 3.0, 4.0, 5.0], [1.0, 2.0, 3.0, 4.0, 5.0]]
+            # masks = np.asarray(masks, dtype='uint8')    # values in {0, 1}
             ret['gt_masks'] = masks
 
             # from viz import draw_annotation, draw_mask
