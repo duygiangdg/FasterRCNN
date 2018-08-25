@@ -32,11 +32,11 @@ from basemodel import (
     resnet_fpn_backbone)
 
 import model_frcnn
-import model_mrcnn
+import model_r2cnn as model_mrcnn
 from model_frcnn import (
     sample_fast_rcnn_targets,
     fastrcnn_outputs, fastrcnn_predictions, FastRCNNHead)
-from model_mrcnn import maskrcnn_upXconv_head, maskrcnn_loss
+from model_r2cnn import maskrcnn_upXconv_head, maskrcnn_loss
 from model_rpn import rpn_head, rpn_losses, generate_rpn_proposals
 from model_fpn import (
     fpn_model, multilevel_roi_align,
