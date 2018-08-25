@@ -69,7 +69,7 @@ _C.MODE_MASK = True        # FasterRCNN or MaskRCNN
 _C.MODE_FPN = False
 
 # dataset -----------------------
-_C.DATA.BASEDIR = '../COCO/DIR'
+_C.DATA.BASEDIR = './COCO/DIR'
 _C.DATA.TRAIN = ['train2014', 'valminusminival2014']   # i.e., trainval35k
 _C.DATA.VAL = 'minival2014'   # For now, only support evaluation on single dataset
 _C.DATA.NUM_CATEGORY = 80    # 80 categories.
