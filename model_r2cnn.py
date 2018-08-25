@@ -78,21 +78,21 @@ def maskrcnn_upXconv_head(feature, num_category, num_convs, norm=None):
     """
     assert norm in [None, 'GN'], norm
     l = feature
-    with argscope([Conv2D, Conv2DTranspose], data_format='channels_first',
-                  kernel_initializer=tf.variance_scaling_initializer(
-                      scale=2.0, mode='fan_out', distribution='normal')):
-        # c2's MSRAFill is fan_out
-        for k in range(num_convs):
-            l = Conv2D('fcn{}'.format(k), l, cfg.MRCNN.HEAD_DIM, 3, activation=tf.nn.relu)
-            if norm is not None:
-                l = GroupNorm('gn{}'.format(k), l)
-        l = FullyConnected('deconv', l, cfg.MRCNN.HEAD_DIM, 
-            kernel_initializer=tf.variance_scaling_initializer(), activation=tf.nn.relu)
+    # with argscope(Conv2D, data_format='channels_first',
+    #               kernel_initializer=tf.variance_scaling_initializer(
+    #                   scale=2.0, mode='fan_out', distribution='normal')):
+    #     # c2's MSRAFill is fan_out
+    #     for k in range(num_convs):
+    #         l = Conv2D('conv{}'.format(k), l, cfg.MRCNN.HEAD_DIM, 3, activation=tf.nn.relu)
+    #         if norm is not None:
+    #             l = GroupNorm('gn{}'.format(k), l)
+    #     l = FullyConnected('fc', l, cfg.MRCNN.HEAD_DIM, 
+    #         kernel_initializer=tf.variance_scaling_initializer(), activation=tf.nn.relu)
 
     num_classes = num_category + 1
-    box_regression = FullyConnected('box', l, num_classes * 5,
+    box_regression = FullyConnected('rbox', l, num_classes * 5,
     kernel_initializer=tf.random_normal_initializer(stddev=0.001))
-    box_regression = tf.reshape(box_regression, (-1, num_classes, 5), name='output_box')
+    box_regression = tf.reshape(box_regression, (-1, num_classes, 5), name='output_rbox')
     return box_regression
 
 
