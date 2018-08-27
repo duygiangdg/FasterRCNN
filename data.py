@@ -372,14 +372,11 @@ def get_train_dataflow():
                 masks.append([x, y, width, height, angle])
             ret['gt_masks'] = masks
 
-            import matplotlib.pyplot as plt
-            from viz import draw_annotation, draw_mask
-            viz = draw_annotation(im, boxes, klass)
-            for mask in masks:
-                viz = draw_mask(viz, mask)
-            plt.imshow(viz)
-            plt.axis('off')
-            plt.show()
+            # from viz import draw_annotation, draw_mask
+            # viz = draw_annotation(im, boxes, klass)
+            # for mask in masks:
+            #     viz = draw_mask(viz, mask)
+            # tpviz.interactive_imshow(viz)
         return ret
 
     if cfg.TRAINER == 'horovod':
