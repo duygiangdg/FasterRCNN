@@ -39,7 +39,7 @@ def proposal_metrics(iou):
 
 
 @under_name_scope()
-def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels):
+def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_masks):
     """
     Sample some ROIs from all proposals for training.
     #fg is guaranteed to be > 0, because grount truth boxes are added as RoIs.
@@ -96,7 +96,7 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels):
     # stop the gradient -- they are meant to be training targets
     return tf.stop_gradient(ret_boxes, name='sampled_proposal_boxes'), \
         tf.stop_gradient(ret_labels, name='sampled_labels'), \
-        tf.stop_gradient(fg_inds_wrt_gt)
+        tf.stop_gradient(fg_inds_wrt_gt), [[1.0, 2.0, 3.0, 4.0, 5.0]]
 
 
 @layer_register(log_shape=True)
@@ -116,20 +116,26 @@ def fastrcnn_outputs(feature, num_classes):
         'box', feature, num_classes * 4,
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
     box_regression = tf.reshape(box_regression, (-1, num_classes, 4), name='output_box')
-    return classification, box_regression
+    mask_regression = FullyConnected(
+        'mask', feature, num_classes * 5,
+        kernel_initializer=tf.random_normal_initializer(stddev=0.001))
+    mask_regression = tf.reshape(mask_regression, (-1, num_classes, 5), name='output_mask')
+    return classification, box_regression, mask_regression
 
 
 @under_name_scope()
-def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
+def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mask_logits):
     """
     Args:
         labels: n,
         label_logits: nxC
         fg_boxes: nfgx4, encoded
         fg_box_logits: nfgxCx4
+        fg_masks: nfgx5, encoded
+        mask_logits: nfgxCx5
 
     Returns:
-        label_loss, box_loss
+        label_loss, box_loss, mask_loss
     """
     label_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
         labels=labels, logits=label_logits)
@@ -141,6 +147,7 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
     indices = tf.stack(
         [tf.range(num_fg), fg_labels], axis=1)  # #fgx2
     fg_box_logits = tf.gather_nd(fg_box_logits, indices)
+    mask_logits = tf.gather_nd(mask_logits, indices)
 
     with tf.name_scope('label_metrics'), tf.device('/cpu:0'):
         prediction = tf.argmax(label_logits, axis=1, name='label_prediction')
@@ -157,8 +164,12 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits):
     box_loss = tf.truediv(
         box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
-    add_moving_summary(label_loss, box_loss, accuracy, fg_accuracy, false_negative)
-    return label_loss, box_loss
+    mask_loss = tf.losses.huber_loss(
+        fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
+    mask_loss = tf.truediv(mask_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+
+    add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
+    return label_loss, box_loss, mask_loss
 
 
 @under_name_scope()
@@ -283,8 +294,8 @@ class FastRCNNHead(object):
     """
     A class to process & decode inputs/outputs of a fastrcnn classification+regression head.
     """
-    def __init__(self, input_boxes, box_logits, label_logits, bbox_regression_weights,
-                 labels=None, matched_gt_boxes_per_fg=None):
+    def __init__(self, input_boxes, box_logits, input_masks, mask_logits, label_logits, 
+                bbox_regression_weights, labels=None, matched_gt_boxes_per_fg=None):
         """
         Args:
             input_boxes: Nx4, inputs to the head
@@ -322,13 +333,10 @@ class FastRCNNHead(object):
 
     @memoized
     def losses(self):
-        encoded_fg_gt_boxes = encode_bbox_target(
-            self.matched_gt_boxes_per_fg,
+        encoded_fg_gt_boxes = encode_bbox_target(self.matched_gt_boxes_per_fg,
             self.fg_input_boxes()) * self.bbox_regression_weights
-        return fastrcnn_losses(
-            self.labels, self.label_logits,
-            encoded_fg_gt_boxes, self.fg_box_logits()
-        )
+        return fastrcnn_losses(self.labels, self.label_logits,
+            encoded_fg_gt_boxes, self.fg_box_logits(), self.input_masks, self.mask_logits)
 
     @memoized
     def decoded_output_boxes(self):
