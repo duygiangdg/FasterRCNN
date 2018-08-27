@@ -11,7 +11,7 @@ from tensorpack.dataflow import (
     MultiProcessMapDataZMQ, MultiThreadMapData,
     MapDataComponent, DataFromList)
 from tensorpack.utils import logger
-# import tensorpack.utils.viz as tpviz
+import tensorpack.utils.viz as tpviz
 
 from coco import COCODetection
 from utils.generate_anchors import generate_anchors
@@ -362,17 +362,21 @@ def get_train_dataflow():
             # And produce one image-sized binary mask per box.
             masks = []
             for polys in segmentation:
-                # polys = [aug.augment_coords(p, params) for p in polys]
-                # masks.append(segmentation_to_mask(polys, im.shape[0], im.shape[1]))
-                masks.append([1.0, 2.0, 3.0, 4.0, 5.0])
-            # masks = np.asarray(masks, dtype='uint8')    # values in {0, 1}
+                polys = [aug.augment_coords(p, params) for p in polys]
+                mask = segmentation_to_mask([polys[0]], im.shape[0], im.shape[1])
+                _mask = mask.copy().astype(np.uint8)
+                im2, contours, hierarchy = cv2.findContours(_mask, cv2.RETR_EXTERNAL, 
+                                                            cv2.CHAIN_APPROX_SIMPLE)
+                cnt = contours[0]
+                (x,y), (width, height), angle = cv2.minAreaRect(cnt)
+                masks.append([x, y, width, height, angle])
             ret['gt_masks'] = masks
 
-            # from viz import draw_annotation, draw_mask
-            # viz = draw_annotation(im, boxes, klass)
-            # for mask in masks:
-            #     viz = draw_mask(viz, mask)
-            # tpviz.interactive_imshow(viz)
+            from viz import draw_annotation, draw_mask
+            viz = draw_annotation(im, boxes, klass)
+            for mask in masks:
+                viz = draw_mask(viz, mask)
+            tpviz.interactive_imshow(viz)
         return ret
 
     if cfg.TRAINER == 'horovod':

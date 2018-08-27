@@ -3,12 +3,15 @@
 
 from six.moves import zip
 import numpy as np
+import cv2
 
 from tensorpack.utils import viz
 from tensorpack.utils.palette import PALETTE_RGB
 
 from utils.np_box_ops import iou as np_iou
 from config import config as cfg
+
+from common import segmentation_to_mask
 
 
 def draw_annotation(img, boxes, klass, is_crowd=None):
@@ -92,6 +95,11 @@ def draw_mask(im, mask, alpha=0.5, color=None):
         mask: a binary 1-channel image of the same size
         color: if None, will choose automatically
     """
+    x, y, width, height, angle = mask
+    rect = (x,y), (width, height), angle
+    box = cv2.boxPoints(rect)
+    mask = segmentation_to_mask([box], im.shape[0], im.shape[1])
+
     if color is None:
         color = PALETTE_RGB[np.random.choice(len(PALETTE_RGB))][::-1]
     im = np.where(np.repeat((mask > 0)[:, :, None], 3, axis=2),
