@@ -170,7 +170,7 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
 
     mask_loss = tf.losses.huber_loss(
         fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    mask_loss = tf.truediv(mask_loss/200, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    mask_loss = tf.truediv(mask_loss/100, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
 
     add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
     return label_loss, box_loss, mask_loss

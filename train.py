@@ -315,7 +315,7 @@ class EvalCallback(Callback):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--load', help='load a model for evaluation or training. Can overwrite BACKBONE.WEIGHTS')
-    parser.add_argument('--logdir', help='log directory', default='train_log/maskrcnn')
+    parser.add_argument('--logdir', help='log directory', default='../drive/train_log/maskrcnn')
     parser.add_argument('--visualize', action='store_true', help='visualize intermediate results')
     parser.add_argument('--evaluate', help="Run evaluation on COCO. "
                                            "This argument is the path to the output json evaluation file")
