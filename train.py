@@ -252,7 +252,9 @@ def predict(pred_func, input_file):
     results = detect_one_image(img, pred_func)
     final = draw_final_outputs(img, results)
     viz = np.concatenate((img, final), axis=1)
-    tpviz.interactive_imshow(viz)
+    # tpviz.interactive_imshow(viz)
+    cv2.imwrite('./predicted_image.jpg', viz)
+    cv2.distroyAllWindows()
 
 
 class EvalCallback(Callback):
