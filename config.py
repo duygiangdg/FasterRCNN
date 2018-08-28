@@ -76,7 +76,7 @@ _C.DATA.NUM_CATEGORY = 80    # 80 categories.
 _C.DATA.CLASS_NAMES = []  # NUM_CLASS (NUM_CATEGORY+1) strings, to be populated later by data loader. The first is BG.
 
 # basemodel ----------------------
-_C.BACKBONE.WEIGHTS = '../ImageNet-ResNet50.npz'   # /path/to/weights.npz
+_C.BACKBONE.WEIGHTS = '../../ImageNet-ResNet50.npz'   # /path/to/weights.npz
 _C.BACKBONE.RESNET_NUM_BLOCK = [3, 4, 6, 3]     # for resnet50
 # RESNET_NUM_BLOCK = [3, 4, 23, 3]    # for resnet101
 _C.BACKBONE.FREEZE_AFFINE = False   # do not train affine parameters inside norm layers
