@@ -145,6 +145,7 @@ class ResNetC4Model(DetectionModel):
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
             rcnn_labels, matched_gt_boxes, rcnn_masks = None, None, None
+            print('proposal_boxes[0]', proposal_boxes[0])
 
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
@@ -383,7 +384,7 @@ if __name__ == '__main__':
         callbacks = [
             PeriodicCallback(
                 ModelSaver(max_to_keep=10, keep_checkpoint_every_n_hours=1),
-                every_k_epochs=20),
+                every_k_epochs=1),
             # linear warmup
             ScheduledHyperParamSetter(
                 'learning_rate', warmup_schedule, interp='linear', step_based=True),
