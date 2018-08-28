@@ -253,7 +253,7 @@ def predict(pred_func, input_file):
     final = draw_final_outputs(img, results)
     viz = np.concatenate((img, final), axis=1)
     # tpviz.interactive_imshow(viz)
-    cv2.imwrite('./predicted_image.jpg', viz)
+    cv2.imwrite('../drive/train_log/predicted_image.jpg', viz)
     cv2.destroyAllWindows()
 
 
