@@ -182,7 +182,7 @@ class ResNetC4Model(DetectionModel):
             final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices, name='final_masks')
             print('final_boxes', final_boxes)
             print('final_labels', final_labels)
-            print('final_masks', final_masks)
+            print('final_masks', final_mask_logits)
 
 
 def visualize(model, model_path, nr_visualize=100, output_dir='output'):
