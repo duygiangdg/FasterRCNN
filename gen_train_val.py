@@ -34,8 +34,6 @@ def main():
         }
     ]
 
-    images = []
-    annotations = []
     image_id = 0
     annotation_id = 0
 
@@ -43,6 +41,8 @@ def main():
     np.random.shuffle(all_image_names)
     
     print('Generating train data')
+    images = []
+    annotations = []
     for image_name in tqdm(all_image_names[:100]):
         image_id += 1
         masks = read_masks(image_name)
@@ -97,6 +97,8 @@ def main():
     print('Done')
 
     print('Generating val data')
+    images = []
+    annotations = []
     for image_name in tqdm(all_image_names[100:120]):
         image_id += 1
         masks = read_masks(image_name)
