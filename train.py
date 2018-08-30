@@ -145,7 +145,7 @@ class ResNetC4Model(DetectionModel):
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
             rcnn_labels, matched_gt_boxes, rcnn_masks = None, None, None
-            print('proposal_boxes[0]', proposal_boxes[0])
+            # ToDo
 
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
@@ -176,10 +176,10 @@ class ResNetC4Model(DetectionModel):
             add_moving_summary(total_cost, wd_cost)
             return total_cost
         else:
+            # ToDo
             final_boxes, final_labels = self.fastrcnn_inference(image_shape2d, fastrcnn_head)
             indices = tf.stack([tf.range(tf.size(final_labels)), tf.to_int32(final_labels) - 1], axis=1)
-            final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices)   # #resultx14x14
-            tf.sigmoid(final_mask_logits, name='final_masks')
+            final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices, name='final_masks')
 
 
 def visualize(model, model_path, nr_visualize=100, output_dir='output'):
