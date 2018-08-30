@@ -132,7 +132,7 @@ class MultiThreadMapData(_ParallelMapData):
             finally:
                 self.stop()
 
-    def __init__(self, ds, nr_thread, map_func, buffer_size=5, strict=False):
+    def __init__(self, ds, nr_thread, map_func, buffer_size=1, strict=False):
         """
         Args:
             ds (DataFlow): the dataflow to map
@@ -236,7 +236,7 @@ class MultiProcessMapDataZMQ(_ParallelMapData, _MultiProcessZMQDataFlow):
                 dp = self.map_func(dp)
                 socket.send(dumps(dp), copy=False)
 
-    def __init__(self, ds, nr_proc, map_func, buffer_size=5, strict=False):
+    def __init__(self, ds, nr_proc, map_func, buffer_size=1, strict=False):
         """
         Args:
             ds (DataFlow): the dataflow to map
