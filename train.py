@@ -180,6 +180,9 @@ class ResNetC4Model(DetectionModel):
             final_boxes, final_labels = self.fastrcnn_inference(image_shape2d, fastrcnn_head)
             indices = tf.stack([tf.range(tf.size(final_labels)), tf.to_int32(final_labels) - 1], axis=1)
             final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices, name='final_masks')
+            print('final_boxes', final_boxes)
+            print('final_labels', final_labels)
+            print('final_masks', final_masks)
 
 
 def visualize(model, model_path, nr_visualize=100, output_dir='output'):
