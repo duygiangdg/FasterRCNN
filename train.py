@@ -389,7 +389,7 @@ if __name__ == '__main__':
         callbacks = [
             PeriodicCallback(
                 ModelSaver(max_to_keep=10, keep_checkpoint_every_n_hours=1),
-                every_k_epochs=5),
+                every_k_epochs=1),
             # linear warmup
             ScheduledHyperParamSetter(
                 'learning_rate', warmup_schedule, interp='linear', step_based=True),
