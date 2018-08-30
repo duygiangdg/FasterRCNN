@@ -69,10 +69,10 @@ _C.MODE_MASK = True        # FasterRCNN or MaskRCNN
 _C.MODE_FPN = False
 
 # dataset -----------------------
-_C.DATA.BASEDIR = './COCO/DIR'
-_C.DATA.TRAIN = ['train2014', 'valminusminival2014']   # i.e., trainval35k
-_C.DATA.VAL = 'minival2014'   # For now, only support evaluation on single dataset
-_C.DATA.NUM_CATEGORY = 80    # 80 categories.
+_C.DATA.BASEDIR = './ship'
+_C.DATA.TRAIN = ['train2014']   # i.e., trainval35k
+_C.DATA.VAL = 'val2014'   # For now, only support evaluation on single dataset
+_C.DATA.NUM_CATEGORY = 1    # 80 categories.
 _C.DATA.CLASS_NAMES = []  # NUM_CLASS (NUM_CATEGORY+1) strings, to be populated later by data loader. The first is BG.
 
 # basemodel ----------------------
@@ -97,7 +97,7 @@ _C.TRAIN.NUM_GPUS = None         # by default, will be set from code
 _C.TRAIN.WEIGHT_DECAY = 1e-4
 _C.TRAIN.BASE_LR = 1e-2  # defined for a total batch size of 8. Otherwise it will be adjusted automatically
 _C.TRAIN.WARMUP = 1000   # in terms of iterations. This is not affected by #GPUs
-_C.TRAIN.STEPS_PER_EPOCH = 30
+_C.TRAIN.STEPS_PER_EPOCH = 100
 
 # LR_SCHEDULE means "steps" only when total batch size is 8.
 # Otherwise the actual steps to decrease learning rate are computed from the schedule.
