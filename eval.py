@@ -83,7 +83,7 @@ def detect_one_image(img, model_func):
         # full_masks = [fill_full_mask(box, mask, orig_shape)
         #               for box, mask in zip(boxes, masks[0])]
         # masks = full_masks
-        print('mask', masks[0,1])
+        print('mask', masks[0][1])
     else:
         # fill with none
         masks = [None] * len(boxes)
