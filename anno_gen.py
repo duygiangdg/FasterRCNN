@@ -57,7 +57,7 @@ def main():
             area = cv.contourArea(cnt)
 
             x, y, w, h = cv.boundingRect(cnt)
-            bbox = [y, x, h, w]
+            bbox = [x, y, w, h]
 
             (x,y), (width, height), angle = cv.minAreaRect(cnt)
             rect = x, y, width, height, angle
