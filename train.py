@@ -80,6 +80,7 @@ class DetectionModel(ModelDesc):
             boxes (mx4):
             labels (m): each >= 1
         """
+        print('fastrcnn_inference')
         decoded_boxes = fastrcnn_head.decoded_output_boxes()
         decoded_boxes = clip_boxes(decoded_boxes, image_shape2d, name='fastrcnn_all_boxes')
         label_probs = fastrcnn_head.output_scores(name='fastrcnn_all_probs')

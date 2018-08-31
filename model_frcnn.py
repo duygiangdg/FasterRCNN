@@ -94,7 +94,7 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_masks):
         [tf.gather(gt_labels, fg_inds_wrt_gt),
          tf.zeros_like(bg_inds, dtype=tf.int64)], axis=0)
 
-    ret_masks = tf.gather(gt_masks, fg_inds_wrt_gt)
+    ret_masks = tf.gather(gt_masks, all_indices)
 
     # stop the gradient -- they are meant to be training targets
     return tf.stop_gradient(ret_boxes, name='sampled_proposal_boxes'), \
@@ -166,11 +166,12 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
     box_loss = tf.losses.huber_loss(
         fg_boxes, fg_box_logits, reduction=tf.losses.Reduction.SUM)
     box_loss = tf.truediv(
-        0.0, tf.to_float(tf.shape(labels)[0]), name='box_loss')
+        box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
-    mask_loss = tf.losses.huber_loss(
-        fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    mask_loss = tf.truediv(mask_loss/100, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    # mask_loss = tf.losses.huber_loss(
+    #     fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
+    # mask_loss = tf.truediv(mask_loss/100, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    mask_loss = 0.0
 
     add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
     return label_loss, box_loss, mask_loss
