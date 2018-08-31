@@ -78,6 +78,8 @@ def detect_one_image(img, model_func):
     # boxes are already clipped inside the graph, but after the floating point scaling, this may not be true any more.
     boxes = clip_boxes(boxes, orig_shape)
 
+    print('boxes', boxes)
+
     if masks:
         # has mask
         # full_masks = [fill_full_mask(box, mask, orig_shape)
