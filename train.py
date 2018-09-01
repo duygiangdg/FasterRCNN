@@ -146,7 +146,10 @@ class ResNetC4Model(DetectionModel):
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
             angles = tf.ones((tf.shape(proposal_boxes)[0], 1))*(-45.)
-            rcnn_masks = tf.concat([proposal_boxes, angles], axis=1)
+            x1y1, x2y2 = proposal_boxes[:, 0:2], proposal_boxes[:, 2:4]
+            wh = x2y2 - x1y1
+            xy = (x2y2 + x1y1) * 0.5
+            rcnn_masks = tf.concat([xy, wh, angles], axis=1)
             rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
 
