@@ -330,10 +330,10 @@ class FastRCNNHead(object):
     def losses(self):
         encoded_fg_gt_boxes = encode_bbox_target(self.matched_gt_boxes_per_fg,
             self.fg_input_boxes()) * self.bbox_regression_weights
-        encoded_fg_gt_masks = encode_mask_target(self.matched_gt_masks_per_fg,
+        encoded_fg_gt_masks = encode_mask_target(self.fg_input_masks(),
             self.fg_input_masks()) * self.mask_regression_weights
         return fastrcnn_losses(self.labels, self.label_logits, encoded_fg_gt_boxes, 
-            self.fg_box_logits(), encoded_fg_gt_masks, encoded_fg_gt_masks)
+            self.fg_box_logits(), encoded_fg_gt_masks, self.fg_mask_logits())
 
     @memoized
     def decoded_output_boxes(self):
