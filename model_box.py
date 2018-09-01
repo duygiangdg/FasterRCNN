@@ -78,6 +78,31 @@ def encode_bbox_target(boxes, anchors):
     encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)
     return tf.reshape(encoded, tf.shape(boxes))
 
+@under_name_scope()
+def encode_mask_target(masks, anchors):
+    """
+    Args:
+        masks: (..., 5), float32
+        anchors: (..., 5), float32
+
+    Returns:
+        mask_encoded: (..., 5), float32 with the same shape.
+    """
+    waha = anchors[:, 2:4]
+    xaya = anchors[:, 0:2]
+    anglea = anchors[:, 0:4]
+
+    wbhb = masks[:, 2:4]
+    xbyb = masks[:, 0:2]
+    angleb = masks[4]
+
+    # Note that here not all boxes are valid. Some may be zero
+    txty = (xbyb - xaya) / waha
+    twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
+    tangle = tf.log(angleb/anglea)
+    encoded = tf.concat([txty, twth, tangle], axis=1)
+    return encoded
+
 
 @under_name_scope()
 def crop_and_resize(image, boxes, box_ind, crop_size, pad_border=True):

@@ -12,7 +12,7 @@ from tensorpack.utils.argtools import memoized
 
 from basemodel import GroupNorm
 from utils.box_ops import pairwise_iou
-from model_box import encode_bbox_target, decode_bbox_target
+from model_box import encode_bbox_target, encode_mask_target, decode_bbox_target
 from config import config as cfg
 
 
@@ -113,15 +113,12 @@ def fastrcnn_outputs(feature, num_classes):
     Returns:
         cls_logits (Nxnum_class), reg_logits (Nx num_class x 4)
     """
-    classification = FullyConnected(
-        'class', feature, num_classes,
+    classification = FullyConnected('class', feature, num_classes,
         kernel_initializer=tf.random_normal_initializer(stddev=0.01))
-    box_regression = FullyConnected(
-        'box', feature, num_classes * 4,
+    box_regression = FullyConnected('box', feature, num_classes * 4,
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
     box_regression = tf.reshape(box_regression, (-1, num_classes, 4), name='output_box')
-    mask_regression = FullyConnected(
-        'mask', feature, num_classes * 5,
+    mask_regression = FullyConnected('mask', feature, num_classes * 5,
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
     mask_regression = tf.reshape(mask_regression, (-1, num_classes, 5), name='output_mask')
     return classification, box_regression, mask_regression
@@ -141,15 +138,13 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
     Returns:
         label_loss, box_loss, mask_loss
     """
-    label_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(
-        labels=labels, logits=label_logits)
+    label_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=label_logits)
     label_loss = tf.reduce_mean(label_loss, name='label_loss')
 
     fg_inds = tf.where(labels > 0)[:, 0]
     fg_labels = tf.gather(labels, fg_inds)
     num_fg = tf.size(fg_inds, out_type=tf.int64)
-    indices = tf.stack(
-        [tf.range(num_fg), fg_labels], axis=1)  # #fgx2
+    indices = tf.stack([tf.range(num_fg), fg_labels], axis=1)  # #fgx2
     fg_box_logits = tf.gather_nd(fg_box_logits, indices)
     mask_logits = tf.gather_nd(mask_logits, indices)
 
@@ -160,17 +155,13 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
         fg_label_pred = tf.argmax(tf.gather(label_logits, fg_inds), axis=1)
         num_zero = tf.reduce_sum(tf.to_int64(tf.equal(fg_label_pred, 0)), name='num_zero')
         false_negative = tf.truediv(num_zero, num_fg, name='false_negative')
-        fg_accuracy = tf.reduce_mean(
-            tf.gather(correct, fg_inds), name='fg_accuracy')
+        fg_accuracy = tf.reduce_mean(tf.gather(correct, fg_inds), name='fg_accuracy')
 
-    box_loss = tf.losses.huber_loss(
-        fg_boxes, fg_box_logits, reduction=tf.losses.Reduction.SUM)
-    box_loss = tf.truediv(
-        box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
+    box_loss = tf.losses.huber_loss(fg_boxes, fg_box_logits, reduction=tf.losses.Reduction.SUM)
+    box_loss = tf.truediv(box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
-    mask_loss = tf.losses.huber_loss(
-        fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    mask_loss = tf.truediv(0.0, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    mask_loss = tf.losses.huber_loss(fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
+    mask_loss = tf.truediv(mask_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
 
     add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
     return label_loss, box_loss, mask_loss
@@ -244,23 +235,6 @@ FastRCNN heads for FPN:
 
 
 @layer_register(log_shape=True)
-def fastrcnn_2fc_head(feature, num_classes):
-    """
-    Args:
-        feature (any shape):
-        num_classes(int): num_category + 1
-
-    Returns:
-        outputs of `fastrcnn_outputs()`
-    """
-    dim = cfg.FPN.FRCNN_FC_HEAD_DIM
-    init = tf.variance_scaling_initializer()
-    hidden = FullyConnected('fc6', feature, dim, kernel_initializer=init, activation=tf.nn.relu)
-    hidden = FullyConnected('fc7', hidden, dim, kernel_initializer=init, activation=tf.nn.relu)
-    return fastrcnn_outputs('outputs', hidden, num_classes)
-
-
-@layer_register(log_shape=True)
 def fastrcnn_Xconv1fc_head(feature, num_classes, num_convs, norm=None):
     """
     Args:
@@ -298,8 +272,8 @@ class FastRCNNHead(object):
     """
     A class to process & decode inputs/outputs of a fastrcnn classification+regression head.
     """
-    def __init__(self, input_boxes, box_logits, input_masks, mask_logits, label_logits, 
-                bbox_regression_weights, labels=None, matched_gt_boxes_per_fg=None):
+    def __init__(self, input_boxes, input_masks, box_logits, mask_logits, label_logits, 
+                labels=None, matched_gt_boxes_per_fg=None, matched_gt_masks_per_fg=None):
         """
         Args:
             input_boxes: Nx4, inputs to the head
@@ -311,9 +285,16 @@ class FastRCNNHead(object):
 
         The last two arguments could be None when not training.
         """
-        for k, v in locals().items():
-            if k != 'self':
-                setattr(self, k, v)
+        self.input_boxes = input_boxes
+        self.input_masks = input_masks
+        self.box_logits = box_logits
+        self.mask_logits = mask_logits
+        self.label_logits = label_logits
+        self.bbox_regression_weights = tf.constant(cfg.FRCNN.BBOX_REG_WEIGHTS, dtype=tf.float32)
+        self.mask_regression_weights = tf.constant(cfg.FRCNN.MASK_REG_WEIGHTS, dtype=tf.float32)
+        self.labels = labels
+        self.matched_gt_boxes_per_fg = matched_gt_boxes_per_fg
+        self.matched_gt_masks_per_fg = matched_gt_masks_per_fg
 
     @memoized
     def fg_inds_in_inputs(self):
@@ -331,6 +312,16 @@ class FastRCNNHead(object):
         return tf.gather(self.box_logits, self.fg_inds_in_inputs(), name='fg_box_logits')
 
     @memoized
+    def fg_input_masks(self):
+        """ Returns: #fgx4 """
+        return tf.gather(self.input_masks, self.fg_inds_in_inputs(), name='fg_input_masks')
+
+    @memoized
+    def fg_mask_logits(self):
+        """ Returns: #fg x #class x 4 """
+        return tf.gather(self.mask_logits, self.fg_inds_in_inputs(), name='fg_mask_logits')
+
+    @memoized
     def fg_labels(self):
         """ Returns: #fg """
         return tf.gather(self.labels, self.fg_inds_in_inputs(), name='fg_labels')
@@ -339,8 +330,10 @@ class FastRCNNHead(object):
     def losses(self):
         encoded_fg_gt_boxes = encode_bbox_target(self.matched_gt_boxes_per_fg,
             self.fg_input_boxes()) * self.bbox_regression_weights
-        return fastrcnn_losses(self.labels, self.label_logits,
-            encoded_fg_gt_boxes, self.fg_box_logits(), self.input_masks, self.mask_logits)
+        encoded_fg_gt_masks = encode_mask_target(self.matched_gt_masks_per_fg,
+            self.fg_input_masks()) * self.mask_regression_weights
+        return fastrcnn_losses(self.labels, self.label_logits, encoded_fg_gt_boxes, 
+            self.fg_box_logits(), encoded_fg_gt_masks, self.fg_mask_logits())
 
     @memoized
     def decoded_output_boxes(self):

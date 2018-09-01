@@ -80,7 +80,6 @@ class DetectionModel(ModelDesc):
             boxes (mx4):
             labels (m): each >= 1
         """
-        print('fastrcnn_inference')
         decoded_boxes = fastrcnn_head.decoded_output_boxes()
         decoded_boxes = clip_boxes(decoded_boxes, image_shape2d, name='fastrcnn_all_boxes')
         label_probs = fastrcnn_head.output_scores(name='fastrcnn_all_probs')
@@ -141,11 +140,13 @@ class ResNetC4Model(DetectionModel):
             rcnn_boxes, rcnn_labels, fg_inds_wrt_gt, rcnn_masks = sample_fast_rcnn_targets(
                 proposal_boxes, gt_boxes, gt_labels, gt_masks)
             matched_gt_boxes = tf.gather(gt_boxes, fg_inds_wrt_gt, name='gt_boxes_per_fg_proposal')
+            matched_gt_masks = tf.gather(gt_masks, fg_inds_wrt_gt, name='gt_masks_per_fg_proposal')
         else:
             # The boxes to be used to crop RoIs.
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
-            rcnn_labels, matched_gt_boxes, rcnn_masks = None, None, None
+            rcnn_masks = None
+            rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
 
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
@@ -156,9 +157,8 @@ class ResNetC4Model(DetectionModel):
         feature_gap = GlobalAvgPooling('gap', feature_fastrcnn, data_format='channels_first')
         fastrcnn_label_logits, fastrcnn_box_logits, fastrcnn_mask_logits = fastrcnn_outputs('fastrcnn', feature_gap, cfg.DATA.NUM_CLASS)
 
-        fastrcnn_head = FastRCNNHead(rcnn_boxes, fastrcnn_box_logits, rcnn_masks, fastrcnn_mask_logits,
-                                    fastrcnn_label_logits, tf.constant(cfg.FRCNN.BBOX_REG_WEIGHTS, 
-                                    dtype=tf.float32), rcnn_labels, matched_gt_boxes)
+        fastrcnn_head = FastRCNNHead(rcnn_boxes, rcnn_masks, fastrcnn_box_logits, fastrcnn_mask_logits, 
+                    fastrcnn_label_logits, rcnn_labels, matched_gt_boxes, matched_gt_masks)
 
         if is_training:
             # rpn loss
