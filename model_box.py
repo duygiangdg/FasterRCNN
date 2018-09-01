@@ -90,11 +90,11 @@ def encode_mask_target(masks, anchors):
     """
     waha = anchors[:, 2:4]
     xaya = anchors[:, 0:2]
-    anglea = anchors[:, 4]
+    anglea = anchors[:, 4:5]
 
     wbhb = masks[:, 2:4]
     xbyb = masks[:, 0:2]
-    angleb = masks[:, 4]
+    angleb = masks[:, 4:5]
 
     # Note that here not all boxes are valid. Some may be zero
     txty = (xbyb - xaya) / waha
