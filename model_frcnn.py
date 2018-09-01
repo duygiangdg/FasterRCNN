@@ -161,7 +161,7 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
     box_loss = tf.truediv(box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
     mask_loss = tf.losses.huber_loss(fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    mask_loss = tf.truediv(mask_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    mask_loss = tf.truediv(0.0, tf.to_float(tf.shape(labels)[0]))
 
     add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
     return label_loss, box_loss, mask_loss
@@ -330,7 +330,7 @@ class FastRCNNHead(object):
     def losses(self):
         encoded_fg_gt_boxes = encode_bbox_target(self.matched_gt_boxes_per_fg,
             self.fg_input_boxes()) * self.bbox_regression_weights
-        encoded_fg_gt_masks = encode_mask_target(self.fg_input_masks(),
+        encoded_fg_gt_masks = encode_mask_target(self.matched_gt_masks_per_fg,
             self.fg_input_masks()) * self.mask_regression_weights
         return fastrcnn_losses(self.labels, self.label_logits, encoded_fg_gt_boxes, 
             self.fg_box_logits(), encoded_fg_gt_masks, self.fg_mask_logits())
