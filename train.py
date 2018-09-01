@@ -145,7 +145,8 @@ class ResNetC4Model(DetectionModel):
             # The boxes to be used to crop RoIs.
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
-            rcnn_masks = None
+            angles = tf.ones((tf.shape(proposal_boxes)[0], 1))*(-45.)
+            rcnn_masks = tf.concat([proposal_boxes, angles], axis=1)
             rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
 

@@ -101,10 +101,6 @@ def encode_mask_target(masks, anchors):
     twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
     tangle = tf.log(angleb/anglea)
     encoded = tf.concat([txty, twth, tangle], axis=1)
-    sess = tf.InteractiveSession()
-    print('txty', txty.eval())
-    print('twth', twth.eval())
-    print('tangle', tangle.eval())
     return encoded
 
 
