@@ -153,6 +153,8 @@ class ResNetC4Model(DetectionModel):
             rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
 
+        rcnn_masks = gt_masks[0:tf.shape(rcnn_masks)[0], :]
+
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
 
@@ -185,9 +187,6 @@ class ResNetC4Model(DetectionModel):
             final_boxes, final_labels = self.fastrcnn_inference(image_shape2d, fastrcnn_head)
             indices = tf.stack([tf.range(tf.size(final_labels)), tf.to_int32(final_labels) - 1], axis=1)
             final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices, name='final_masks')
-            print('final_boxes', final_boxes)
-            print('final_labels', final_labels)
-            print('final_masks', final_mask_logits)
 
 
 def visualize(model, model_path, nr_visualize=100, output_dir='output'):
