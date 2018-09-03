@@ -100,10 +100,10 @@ def encode_mask_target(masks, anchors):
     txty = (xbyb - xaya) / waha
     twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
     tangle = tf.log(angleb/anglea)
+
+    txty = tf.ones((tf.shape(masks)[0], 2))
+    twth = tf.ones((tf.shape(masks)[0], 2))
     encoded = tf.concat([txty, twth, tangle], axis=1)
-    
-    encoded = tf.ones((tf.shape(masks)[0], 3))
-    encoded = tf.concat([txty, encoded], axis=1)
     return encoded
 
 
