@@ -153,6 +153,8 @@ class ResNetC4Model(DetectionModel):
             rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
 
+        masks = tf.ones((tf.shape(masks)[0], 5))*10.
+
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
 
