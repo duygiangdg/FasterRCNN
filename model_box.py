@@ -102,7 +102,8 @@ def encode_mask_target(masks, anchors):
     tangle = tf.log(angleb/anglea)
     encoded = tf.concat([txty, twth, tangle], axis=1)
     
-    encoded = tf.ones((tf.shape(masks)[0], 5))
+    encoded = tf.ones((tf.shape(masks)[0], 3))
+    encoded = tf.concat([txty, encoded], axis=1)
     return encoded
 
 
