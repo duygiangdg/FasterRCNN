@@ -105,7 +105,7 @@ def encode_mask_target(masks, anchors):
 
     # txty = tf.ones((tf.shape(masks)[0], 2))
     # twth = tf.ones((tf.shape(masks)[0], 2))
-    tangle = tf.ones((tf.shape(masks)[0], 2))*45.
+    tangle = tf.ones((tf.shape(masks)[0], 1))*45.
     encoded = tf.concat([txty, twth, tangle], axis=1)
     return encoded
 
