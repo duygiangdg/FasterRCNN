@@ -135,7 +135,6 @@ class ResNetC4Model(DetectionModel):
             cfg.RPN.TRAIN_POST_NMS_TOPK if is_training else cfg.RPN.TEST_POST_NMS_TOPK)
 
         gt_boxes, gt_labels, gt_masks = inputs['gt_boxes'], inputs['gt_labels'], inputs['gt_masks']
-        gt_masks = tf.ones((tf.shape(gt_masks)[0], 5))*10.
         if is_training:
             # sample proposal boxes in training
             rcnn_boxes, rcnn_labels, fg_inds_wrt_gt, rcnn_masks = sample_fast_rcnn_targets(

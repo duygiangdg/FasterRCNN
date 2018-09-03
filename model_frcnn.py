@@ -95,6 +95,7 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_masks):
          tf.zeros_like(bg_inds, dtype=tf.int64)], axis=0)
 
     ret_masks = tf.gather(gt_masks, all_indices)
+    ret_masks = tf.ones((tf.shape(ret_masks)[0], 5))*10.
 
     # stop the gradient -- they are meant to be training targets
     return tf.stop_gradient(ret_boxes, name='sampled_proposal_boxes'), \
