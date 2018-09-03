@@ -76,6 +76,7 @@ def encode_bbox_target(boxes, anchors):
     txty = (xbyb - xaya) / waha
     twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
     encoded = tf.concat([txty, twth], axis=1)  # (-1x2x2)
+    print('boxes', boxes)
     return tf.reshape(encoded, tf.shape(boxes))
 
 @under_name_scope()
@@ -102,11 +103,9 @@ def encode_mask_target(masks, anchors):
     txty = (xbyb - xaya) / waha
     twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
     tangle = tf.log(angleb/anglea)
-
-    txty = tf.ones((tf.shape(masks)[0], 2))
-    # twth = tf.ones((tf.shape(masks)[0], 2))
-    tangle = tf.ones((tf.shape(masks)[0], 1))*45.
     encoded = tf.concat([txty, twth, tangle], axis=1)
+    print('masks', masks)
+    print('anchors', anchors)
     return encoded
 
 
