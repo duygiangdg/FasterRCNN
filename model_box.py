@@ -89,6 +89,7 @@ def encode_mask_target(masks, anchors):
         mask_encoded: (..., 5), float32 with the same shape.
     """
     anchors = tf.ones((tf.shape(masks)[0], 5))*10.
+    masks = tf.ones((tf.shape(masks)[0], 5))*20.
 
     waha = anchors[:, 2:4]
     xaya = anchors[:, 0:2]
@@ -103,8 +104,8 @@ def encode_mask_target(masks, anchors):
     twth = tf.log(wbhb / waha)  # may contain -inf for invalid boxes
     tangle = tf.log(angleb/anglea)
 
-    txty = tf.ones((tf.shape(masks)[0], 2))
-    twth = tf.ones((tf.shape(masks)[0], 2))
+    # txty = tf.ones((tf.shape(masks)[0], 2))
+    # twth = tf.ones((tf.shape(masks)[0], 2))
     encoded = tf.concat([txty, twth, tangle], axis=1)
     return encoded
 
