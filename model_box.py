@@ -88,6 +88,8 @@ def encode_mask_target(masks, anchors):
     Returns:
         mask_encoded: (..., 5), float32 with the same shape.
     """
+    anchors = tf.ones((tf.shape(masks)[0], 5))*10.
+
     waha = anchors[:, 2:4]
     xaya = anchors[:, 0:2]
     anglea = anchors[:, 4:5]
