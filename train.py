@@ -135,6 +135,7 @@ class ResNetC4Model(DetectionModel):
             cfg.RPN.TRAIN_POST_NMS_TOPK if is_training else cfg.RPN.TEST_POST_NMS_TOPK)
 
         gt_boxes, gt_labels, gt_masks = inputs['gt_boxes'], inputs['gt_labels'], inputs['gt_masks']
+        gt_masks = tf.ones((tf.shape(gt_masks)[0], 5))*10.
         if is_training:
             # sample proposal boxes in training
             rcnn_boxes, rcnn_labels, fg_inds_wrt_gt, rcnn_masks = sample_fast_rcnn_targets(
@@ -152,8 +153,6 @@ class ResNetC4Model(DetectionModel):
             rcnn_masks = tf.concat([xy, wh, angles], axis=1)
             rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
             # ToDo
-
-        rcnn_masks = gt_masks[0:tf.shape(rcnn_masks)[0], :]
 
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
