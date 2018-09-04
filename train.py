@@ -135,23 +135,17 @@ class ResNetC4Model(DetectionModel):
             cfg.RPN.TRAIN_POST_NMS_TOPK if is_training else cfg.RPN.TEST_POST_NMS_TOPK)
 
         gt_boxes, gt_labels, gt_masks = inputs['gt_boxes'], inputs['gt_labels'], inputs['gt_masks']
+        gt_angles = gt_masks[:, 4]
         if is_training:
             # sample proposal boxes in training
-            rcnn_boxes, rcnn_labels, fg_inds_wrt_gt, rcnn_masks = sample_fast_rcnn_targets(
-                proposal_boxes, gt_boxes, gt_labels, gt_masks)
+            rcnn_boxes, rcnn_labels, fg_inds_wrt_gt, rcnn_angles = sample_fast_rcnn_targets(
+                proposal_boxes, gt_boxes, gt_labels, gt_angles)
             matched_gt_boxes = tf.gather(gt_boxes, fg_inds_wrt_gt, name='gt_boxes_per_fg_proposal')
-            matched_gt_masks = tf.gather(gt_masks, fg_inds_wrt_gt, name='gt_masks_per_fg_proposal')
         else:
             # The boxes to be used to crop RoIs.
             # Use all proposal boxes in inference
             rcnn_boxes = proposal_boxes
-            angles = tf.ones((tf.shape(proposal_boxes)[0], 1))*(-45.)
-            x1y1, x2y2 = proposal_boxes[:, 0:2], proposal_boxes[:, 2:4]
-            wh = x2y2 - x1y1
-            xy = (x2y2 + x1y1) * 0.5
-            rcnn_masks = tf.concat([xy, wh, angles], axis=1)
-            rcnn_labels, matched_gt_boxes, matched_gt_masks = None, None, None
-            # ToDo
+            rcnn_labels, matched_gt_boxes, rcnn_angles = None, None, None
 
         boxes_on_featuremap = rcnn_boxes * (1.0 / cfg.RPN.ANCHOR_STRIDE)
         roi_resized = roi_align(featuremap, boxes_on_featuremap, 14)
@@ -159,10 +153,10 @@ class ResNetC4Model(DetectionModel):
         feature_fastrcnn = resnet_conv5(roi_resized, cfg.BACKBONE.RESNET_NUM_BLOCK[-1])    # nxcx7x7
         # Keep C5 feature to be shared with mask branch
         feature_gap = GlobalAvgPooling('gap', feature_fastrcnn, data_format='channels_first')
-        fastrcnn_label_logits, fastrcnn_box_logits, fastrcnn_mask_logits = fastrcnn_outputs('fastrcnn', feature_gap, cfg.DATA.NUM_CLASS)
+        fastrcnn_label_logits, fastrcnn_box_logits, fastrcnn_angle_logits = fastrcnn_outputs('fastrcnn', feature_gap, cfg.DATA.NUM_CLASS)
 
-        fastrcnn_head = FastRCNNHead(rcnn_boxes, rcnn_masks, fastrcnn_box_logits, fastrcnn_mask_logits, 
-                    fastrcnn_label_logits, rcnn_labels, matched_gt_boxes, matched_gt_masks)
+        fastrcnn_head = FastRCNNHead(rcnn_boxes, fastrcnn_box_logits, fastrcnn_angle_logits,
+                            fastrcnn_label_logits, rcnn_labels, rcnn_angles, matched_gt_boxes)
 
         if is_training:
             # rpn loss
@@ -184,7 +178,8 @@ class ResNetC4Model(DetectionModel):
             # ToDo
             final_boxes, final_labels = self.fastrcnn_inference(image_shape2d, fastrcnn_head)
             indices = tf.stack([tf.range(tf.size(final_labels)), tf.to_int32(final_labels) - 1], axis=1)
-            final_mask_logits = tf.gather_nd(fastrcnn_mask_logits, indices, name='final_masks')
+            # final_angles = tf.gather_nd(fastrcnn_angle_logits, indices)
+            final_masks = tf.ones((tf.shape(final_boxes)[0], 5), name='final_masks')
 
 
 def visualize(model, model_path, nr_visualize=100, output_dir='output'):

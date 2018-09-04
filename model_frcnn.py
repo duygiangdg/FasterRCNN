@@ -39,7 +39,7 @@ def proposal_metrics(iou):
 
 
 @under_name_scope()
-def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_masks):
+def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_angles):
     """
     Sample some ROIs from all proposals for training.
     #fg is guaranteed to be > 0, because grount truth boxes are added as RoIs.
@@ -94,13 +94,15 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_masks):
         [tf.gather(gt_labels, fg_inds_wrt_gt),
          tf.zeros_like(bg_inds, dtype=tf.int64)], axis=0)
 
-    ret_masks = tf.gather(gt_masks, fg_inds_wrt_gt)
+    ret_angles = tf.concat(
+        [tf.gather(gt_angles, fg_inds_wrt_gt),
+         tf.zeros_like(bg_inds, dtype=tf.float32)], axis=0)
 
     # stop the gradient -- they are meant to be training targets
     return tf.stop_gradient(ret_boxes, name='sampled_proposal_boxes'), \
         tf.stop_gradient(ret_labels, name='sampled_labels'), \
         tf.stop_gradient(fg_inds_wrt_gt), \
-        tf.stop_gradient(ret_masks, name='sampled_masks')
+        tf.stop_gradient(ret_angles, name='sampled_masks')
 
 
 @layer_register(log_shape=True)
@@ -118,25 +120,25 @@ def fastrcnn_outputs(feature, num_classes):
     box_regression = FullyConnected('box', feature, num_classes * 4,
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
     box_regression = tf.reshape(box_regression, (-1, num_classes, 4), name='output_box')
-    mask_regression = FullyConnected('mask', feature, num_classes * 5,
-        kernel_initializer=tf.random_normal_initializer(stddev=0.001))
-    mask_regression = tf.reshape(mask_regression, (-1, num_classes, 5), name='output_mask')
-    return classification, box_regression, mask_regression
+    angle_regression = FullyConnected('angle', feature, num_classes,
+        kernel_initializer=tf.random_normal_initializer(stddev=0.01))
+    angle_regression = tf.reshape(angle_regression, [-1], name='output_angle')
+    return classification, box_regression, angle_regression
 
 
 @under_name_scope()
-def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mask_logits):
+def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, angles, angle_logits):
     """
     Args:
         labels: n,
         label_logits: nxC
         fg_boxes: nfgx4, encoded
         fg_box_logits: nfgxCx4
-        fg_masks: nfgx5, encoded
-        mask_logits: nfgxCx5
+        angles: n,
+        angle_logits: nxC
 
     Returns:
-        label_loss, box_loss, mask_loss
+        label_loss, box_loss, angle_loss
     """
     label_loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=labels, logits=label_logits)
     label_loss = tf.reduce_mean(label_loss, name='label_loss')
@@ -146,7 +148,6 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
     num_fg = tf.size(fg_inds, out_type=tf.int64)
     indices = tf.stack([tf.range(num_fg), fg_labels], axis=1)  # #fgx2
     fg_box_logits = tf.gather_nd(fg_box_logits, indices)
-    mask_logits = tf.gather_nd(mask_logits, indices)
 
     with tf.name_scope('label_metrics'), tf.device('/cpu:0'):
         prediction = tf.argmax(label_logits, axis=1, name='label_prediction')
@@ -160,11 +161,11 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, fg_masks, mas
     box_loss = tf.losses.huber_loss(fg_boxes, fg_box_logits, reduction=tf.losses.Reduction.SUM)
     box_loss = tf.truediv(box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
-    mask_loss = tf.losses.huber_loss(fg_masks, mask_logits, reduction=tf.losses.Reduction.SUM)
-    mask_loss = tf.truediv(mask_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    angle_loss = tf.losses.huber_loss(angles, angle_logits, reduction=tf.losses.Reduction.SUM)
+    angle_loss = tf.truediv(angle_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
 
-    add_moving_summary(label_loss, box_loss, mask_loss, accuracy, fg_accuracy, false_negative)
-    return label_loss, box_loss, mask_loss
+    add_moving_summary(label_loss, box_loss, angle_loss, accuracy, fg_accuracy, false_negative)
+    return label_loss, box_loss, angle_loss
 
 
 @under_name_scope()
@@ -272,8 +273,8 @@ class FastRCNNHead(object):
     """
     A class to process & decode inputs/outputs of a fastrcnn classification+regression head.
     """
-    def __init__(self, input_boxes, input_masks, box_logits, mask_logits, label_logits, 
-                labels=None, matched_gt_boxes_per_fg=None, matched_gt_masks_per_fg=None):
+    def __init__(self, input_boxes, box_logits, angle_logits, label_logits,
+                labels=None, angles=None, matched_gt_boxes_per_fg=None):
         """
         Args:
             input_boxes: Nx4, inputs to the head
@@ -285,16 +286,14 @@ class FastRCNNHead(object):
 
         The last two arguments could be None when not training.
         """
-        self.input_boxes = input_boxes
-        self.input_masks = input_masks
-        self.box_logits = box_logits
-        self.mask_logits = mask_logits
-        self.label_logits = label_logits
         self.bbox_regression_weights = tf.constant(cfg.FRCNN.BBOX_REG_WEIGHTS, dtype=tf.float32)
-        self.mask_regression_weights = tf.constant(cfg.FRCNN.MASK_REG_WEIGHTS, dtype=tf.float32)
+        self.input_boxes = input_boxes
+        self.box_logits = box_logits
+        self.angle_logits = angle_logits
+        self.label_logits = label_logits
         self.labels = labels
+        self.angles = angles
         self.matched_gt_boxes_per_fg = matched_gt_boxes_per_fg
-        self.matched_gt_masks_per_fg = matched_gt_masks_per_fg
 
     @memoized
     def fg_inds_in_inputs(self):
@@ -312,28 +311,11 @@ class FastRCNNHead(object):
         return tf.gather(self.box_logits, self.fg_inds_in_inputs(), name='fg_box_logits')
 
     @memoized
-    def fg_input_masks(self):
-        """ Returns: #fgx4 """
-        return tf.gather(self.input_masks, self.fg_inds_in_inputs(), name='fg_input_masks')
-
-    @memoized
-    def fg_mask_logits(self):
-        """ Returns: #fg x #class x 4 """
-        return tf.gather(self.mask_logits, self.fg_inds_in_inputs(), name='fg_mask_logits')
-
-    @memoized
-    def fg_labels(self):
-        """ Returns: #fg """
-        return tf.gather(self.labels, self.fg_inds_in_inputs(), name='fg_labels')
-
-    @memoized
     def losses(self):
         encoded_fg_gt_boxes = encode_bbox_target(self.matched_gt_boxes_per_fg,
             self.fg_input_boxes()) * self.bbox_regression_weights
-        encoded_fg_gt_masks = encode_mask_target(self.matched_gt_masks_per_fg,
-            self.fg_input_masks()) * self.mask_regression_weights
         return fastrcnn_losses(self.labels, self.label_logits, encoded_fg_gt_boxes, 
-            self.fg_box_logits(), encoded_fg_gt_masks, self.fg_mask_logits())
+            self.fg_box_logits(), self.angles, self.angle_logits)
 
     @memoized
     def decoded_output_boxes(self):
