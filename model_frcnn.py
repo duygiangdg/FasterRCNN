@@ -181,6 +181,7 @@ def fastrcnn_predictions(boxes, probs):
         indices: Kx2. Each is (box_id, class_id)
         probs: K floats
     """
+    print('fastrcnn_predictions')
     assert boxes.shape[1] == cfg.DATA.NUM_CLASS
     assert probs.shape[1] == cfg.DATA.NUM_CLASS
     boxes = tf.transpose(boxes, [1, 0, 2])[1:, :, :]  # #catxnx4

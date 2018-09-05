@@ -6,6 +6,7 @@ import cv2
 import math
 import matplotlib.pyplot as plt
 import airbus
+from tqdm import tqdm
 
 def iou(mask_true, mask_pred):
     i = np.sum((mask_true*mask_pred) >0)
@@ -58,7 +59,7 @@ def f2_img(img_id):
 def f2_all():
     score = 0
     img_ids = airbus.read_all_img_ids('pred')
-    for img_id in img_ids:
+    for img_id in tqdm(img_ids):
         score += f2_img(img_id)
     avg_score = score/len(img_ids)
     return avg_score

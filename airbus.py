@@ -9,9 +9,9 @@ TRAIN_PATH = '../input/train'
 VAL_PATH = '../input/val'
 TEST_PATH = '../input/test'
 TRAIN_SEG_PATH = '../input/train_ship_segmentations.csv'
-VAL_SEG_PATH = '../input/val_seg.csv'
+VAL_SEG_PATH = '../input/train_ship_segmentations.csv'
 TEST_SEG_PATH = '../input/test/subsample.csv'
-PRED_SEG_PATH = '../input/pred_seg.csv'
+PRED_SEG_PATH = '../input/train_ship_segmentations.csv'
 
 def get_path(type='train'):
     if type=='train':
