@@ -94,9 +94,7 @@ def sample_fast_rcnn_targets(boxes, gt_boxes, gt_labels, gt_angles):
         [tf.gather(gt_labels, fg_inds_wrt_gt),
          tf.zeros_like(bg_inds, dtype=tf.int64)], axis=0)
 
-    ret_angles = tf.concat(
-        [tf.gather(gt_angles, fg_inds_wrt_gt),
-         tf.zeros_like(bg_inds, dtype=tf.float32)], axis=0)
+    ret_angles = tf.gather(gt_angles, fg_inds_wrt_gt)
 
     # stop the gradient -- they are meant to be training targets
     return tf.stop_gradient(ret_boxes, name='sampled_proposal_boxes'), \
@@ -120,7 +118,7 @@ def fastrcnn_outputs(feature, num_classes):
     box_regression = FullyConnected('box', feature, num_classes * 4,
         kernel_initializer=tf.random_normal_initializer(stddev=0.001))
     box_regression = tf.reshape(box_regression, (-1, num_classes, 4), name='output_box')
-    angle_regression = FullyConnected('angle', feature, num_classes,
+    angle_regression = FullyConnected('angle', feature, 1,
         kernel_initializer=tf.random_normal_initializer(stddev=0.01))
     angle_regression = tf.reshape(angle_regression, [-1], name='output_angle')
     return classification, box_regression, angle_regression
@@ -161,8 +159,8 @@ def fastrcnn_losses(labels, label_logits, fg_boxes, fg_box_logits, angles, angle
     box_loss = tf.losses.huber_loss(fg_boxes, fg_box_logits, reduction=tf.losses.Reduction.SUM)
     box_loss = tf.truediv(box_loss, tf.to_float(tf.shape(labels)[0]), name='box_loss')
 
-    angle_loss = tf.losses.huber_loss(angles, angle_logits, reduction=tf.losses.Reduction.SUM)
-    angle_loss = tf.truediv(angle_loss, tf.to_float(tf.shape(labels)[0]), name='mask_loss')
+    angle_loss = tf.losses.mean_squared_error(angles, angle_logits)
+    angle_loss = tf.reduce_mean(angle_loss, name='angle_loss')
 
     add_moving_summary(label_loss, box_loss, angle_loss, accuracy, fg_accuracy, false_negative)
     return label_loss, box_loss, angle_loss
